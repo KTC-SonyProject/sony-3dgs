@@ -1,4 +1,5 @@
 import os
+from collections.abc import Iterator
 from typing import Annotated
 
 from IPython.display import Image, display
@@ -6,7 +7,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
-from app.ai.settings import LLMSettings
+from app.ai.settings import llm_settings
 
 
 class State(TypedDict):
@@ -16,7 +17,7 @@ class State(TypedDict):
 class ChatbotGraph:
     def __init__(self, llm_type: str = "AzureChatOpenAI", verbose: bool = False):
         self.graph_builder = StateGraph(State)
-        self.llm = LLMSettings(llm_type=llm_type, verbose=verbose)
+        self.llm = llm_settings(llm_type=llm_type, verbose=verbose)
         self._initialize_graph()
 
     def _initialize_graph(self) -> None:
@@ -37,14 +38,18 @@ class ChatbotGraph:
         except Exception as e:
             raise ValueError("グラフの描画に失敗しました。") from e
 
-    def stream_graph_updates(self, user_input: str) -> None:
+    def stream_graph_updates(self, user_input: str) -> Iterator[str]:
         for event in self.graph.stream({"messages": [("user", user_input)]}):
             for value in event.values():
-                print("Assistant:", value["messages"][-1].content)
+                # print("Assistant:", value["messages"][-1].content)
+                yield value["messages"][-1].content
+        # yield from self.graph.stream({"messages": [("user", user_input)]}, stream_mode="values")
 
 
 if __name__ == "__main__":
     chatbot_graph = ChatbotGraph(verbose=True)
+
+
     chatbot_graph.draw_graph()
 
     while True:
@@ -54,7 +59,8 @@ if __name__ == "__main__":
                 print("Goodbye!")
                 break
 
-            chatbot_graph.stream_graph_updates(user_input)
+            for response in chatbot_graph.stream_graph_updates(user_input):
+                print("Assistant:", response)
         except Exception as e:
             raise ValueError("ストリーム更新に失敗しました。") from e
 
