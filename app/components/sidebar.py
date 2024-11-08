@@ -7,6 +7,7 @@ from flet import (
     NavigationRail,
     NavigationRailDestination,
     NavigationRailLabelType,
+    Page,
     Row,
     Text,
     alignment,
@@ -17,8 +18,9 @@ from flet import (
 
 
 class Sidebar(Container):
-    def __init__(self):
+    def __init__(self, page:Page):
         super().__init__()
+        self.page = page
         self.nav_rail_visible = True
         self.nav_rail_items = [
             NavigationRailDestination(
@@ -46,7 +48,7 @@ class Sidebar(Container):
             leading=FloatingActionButton(icon=icons.CREATE, text="ADD"),
             group_alignment=-0.9,
             destinations=self.nav_rail_items,
-            on_change=lambda e: print("Selected destination: ", e.control.selected_index),
+            on_change=self.tap_nav_icon,
         )
         self.toggle_nav_rail_button = IconButton(
             icon=icons.ARROW_CIRCLE_LEFT,
@@ -72,7 +74,6 @@ class Sidebar(Container):
             vertical_alignment=CrossAxisAlignment.START,
         )
 
-
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
         self.toggle_nav_rail_button.selected = not self.toggle_nav_rail_button.selected
@@ -80,3 +81,21 @@ class Sidebar(Container):
             "Open Side Bar" if self.toggle_nav_rail_button.selected else "Collapse Side Bar"
         )
         self.update()
+
+    def tap_nav_icon(self, e):
+        if e.control.selected_index == 0:
+            self.page.go('/about')
+        elif e.control.selected_index == 1:
+            self.page.go('/contact')
+        else:
+            self.page.go('/')
+
+
+if __name__ == '__main__':
+    import flet as ft
+    def main(page: ft.Page) -> None:
+        page.title = 'Navigation Rail'
+        sidebar = Sidebar(page)
+        page.add(sidebar)
+
+    ft.app(target=main)

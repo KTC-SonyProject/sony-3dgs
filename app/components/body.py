@@ -5,11 +5,12 @@ from flet import (
 
 
 class ContentBody(Column):
-    def __init__(self):
+    def __init__(self, text:str='Body Text'):
         super().__init__()
+        self.text = text
         self.spacing = 10
         self.controls = [
             Text('**********************'),
-            Text('This is Main Body.'),
+            Text(self.text),
             Text('**********************'),
         ]

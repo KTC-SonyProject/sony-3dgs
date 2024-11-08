@@ -1,9 +1,10 @@
+import flet as ft
 from flet import (
     Page,
     app,
 )
 
-from app.layout import MyLayout
+from app.views import MyView
 
 
 def main(page: Page):
@@ -15,7 +16,17 @@ def main(page: Page):
     page.window.min_width = 800
     page.window.min_height = 600
 
-    page.add(MyLayout(page))
+
+    theme = ft.Theme()
+    theme.page_transitions.android = ft.PageTransitionTheme.NONE
+    theme.page_transitions.ios = ft.PageTransitionTheme.NONE
+    theme.page_transitions.macos = ft.PageTransitionTheme.NONE
+    theme.page_transitions.linux = ft.PageTransitionTheme.NONE
+    theme.page_transitions.windows = ft.PageTransitionTheme.NONE
+    page.theme = theme
+    page.update()
+
+    MyView(page)
 
 if __name__ == '__main__':
     app(target=main)
