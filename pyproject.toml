@@ -15,7 +15,7 @@ langgraph = "^0.2.45"
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.7.1"
+ruff = "^0.7.3"
 mypy = "^1.12.1"
 ipython = "^8.29.0"
 
