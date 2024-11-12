@@ -16,7 +16,7 @@ langgraph = "^0.2.45"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.7.1"
-mypy = "^1.12.1"
+mypy = "^1.13.0"
 ipython = "^8.29.0"
 
 [build-system]
