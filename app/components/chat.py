@@ -78,10 +78,10 @@ class ChatMessage(Row):
 
 
 class ChatBody(Column):
-    def __init__(self, page: Page):
+    def __init__(self, page: Page, session_id: str = "1"):
         super().__init__()
         self.page = page
-        self.chatbot_graph = ChatbotGraph(verbose=True)
+        self._initialize_chatbot(session_id)
         self.chat = ListView(expand=True, spacing=10, auto_scroll=True)
         self.new_message = TextField(
             hint_text="Write a message...",
@@ -119,6 +119,37 @@ class ChatBody(Column):
             )
         ]
         self.expand = True
+        self.show_chat_history()
+
+    def _initialize_chatbot(self, session_id) -> None:
+        self.chatbot_graph = ChatbotGraph(verbose=True)
+        self.session_id = session_id
+        self.chatbot_graph.set_memory_config(self.session_id)
+
+    def show_chat_history(self) -> None:
+        chat_history = self.chatbot_graph.graph.get_state(self.chatbot_graph.memory_config)
+        try:
+            messages_list = chat_history.values["messages"]
+            for message in messages_list:
+                if message.content == "":
+                    continue
+                if message.content is list:
+                    tool_results = message.content
+                    urls = [f"- [{result['title']}]({result['url']})" for result in tool_results]
+                    urls_message = "\n".join(urls)
+                    self.on_message(
+                        Message(
+                            user_name="AI", text=f"ツールを使用して取得した情報です:\n{urls_message}", message_type="ai"
+                        )
+                    )
+                else:
+                    sender = "User" if "HumanMessage" in str(type(message)) else "AI"
+                    message_type = "human" if "HumanMessage" in str(type(message)) else "ai"
+                    self.on_message(Message(user_name=sender, text=message.content, message_type=message_type))
+        except KeyError:
+            pass
+        except Exception as e:
+            print(e)
 
     def on_message(self, message: Message) -> None:
         m = ChatMessage(message)
@@ -127,14 +158,32 @@ class ChatBody(Column):
 
     def send_message_click(self, e: ControlEvent) -> None:
         if self.new_message.value != "":
-            self.on_message(Message(user_name='user', text=self.new_message.value, message_type='human'))
+            # self.on_message(Message(user_name='user', text=self.new_message.value, message_type='human'))
             send_message = self.new_message.value
             self.new_message.value = ''
             self.progress.visible = True
             self.page.update()
+            tool_used = False
 
             for response in self.chatbot_graph.stream_graph_updates(send_message):
-                self.on_message(Message(user_name='AI', text=response, message_type='ai'))
+                print(response)
+                # もしresponseのadditional_kwargs{}が'tool_calls'を持っていたら、それを表示する
+                if "tool_calls" in response.additional_kwargs:
+                    tool_used = True
+                elif tool_used and "results" in response.content:
+                    tool_results = response.content
+                    urls = [f"- [{result['title']}]({result['url']})" for result in tool_results]
+                    urls_message = "\n".join(urls)
+                    self.on_message(
+                        Message(
+                            user_name="AI", text=f"ツールを使用して取得した情報です:\n{urls_message}", message_type="ai"
+                        )
+                    )
+                    tool_used = False
+                else:
+                    sender = "user" if "HumanMessage" in str(type(response)) else "AI"
+                    message_type = "human" if "HumanMessage" in str(type(response)) else "ai"
+                    self.on_message(Message(user_name=sender, text=response.content, message_type=message_type))
 
             self.progress.visible = False
             self.new_message.focus()
