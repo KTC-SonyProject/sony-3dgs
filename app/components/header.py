@@ -32,11 +32,13 @@ class AppHeader(AppBar):
             on_click=self.tap_chat_icon,
         )
         self.appbar_items = [
-            PopupMenuItem(text="Login"),
+            PopupMenuItem(text="Top", on_click=lambda e: self.tap_appbar_item(e, "")),
+            PopupMenuItem(text="Home", on_click=lambda e: self.tap_appbar_item(e, "home")),
             PopupMenuItem(),
-            PopupMenuItem(text="SignUp"),
+            PopupMenuItem(text="Voice", on_click=lambda e: self.tap_appbar_item(e, "voice")),
+            PopupMenuItem(text="Documents", on_click=lambda e: self.tap_appbar_item(e, "documents")),
             PopupMenuItem(),
-            PopupMenuItem(text="Settings"),
+            PopupMenuItem(text="Settings", on_click=lambda e: self.tap_appbar_item(e, "settings")),
         ]
         self.leading=Icon(icons.TRIP_ORIGIN_ROUNDED)
         self.leading_width=100
@@ -67,6 +69,10 @@ class AppHeader(AppBar):
 
     def tap_chat_icon(self, e):
         self.page.route = "/chat"
+        self.page.update()
+
+    def tap_appbar_item(self, e, route_item):
+        self.page.route = f"/{route_item}"
         self.page.update()
 
 
