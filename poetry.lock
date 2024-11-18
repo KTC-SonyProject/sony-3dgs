@@ -1172,29 +1172,29 @@ langchain-core = ">=0.3.15,<0.4.0"
 
 [[package]]
 name = "langgraph"
-version = "0.2.46"
+version = "0.2.50"
 description = "Building stateful, multi-actor applications with LLMs"
 optional = false
 python-versions = "<4.0,>=3.9.0"
 files = [
-    {file = "langgraph-0.2.46-py3-none-any.whl", hash = "sha256:7ca4031bc8f06cb3697ccee21ca80464588656391d3888090b6790dd89bffad1"},
-    {file = "langgraph-0.2.46.tar.gz", hash = "sha256:f1a39ba0d9b3df3b807b14015e682bc2b445ceb760d113e75ab34209a7eaadef"},
+    {file = "langgraph-0.2.50-py3-none-any.whl", hash = "sha256:f4d27fcc8abdb73f41820590bab4135cf1dc04bd8c79f53c06b19145a4866dc2"},
+    {file = "langgraph-0.2.50.tar.gz", hash = "sha256:e4801796b7319e623a3e7b56df7690e25d2e15525f1f6bf3e3eb8cda5e1caa23"},
 ]
 
 [package.dependencies]
 langchain-core = ">=0.2.43,<0.3.0 || >0.3.0,<0.3.1 || >0.3.1,<0.3.2 || >0.3.2,<0.3.3 || >0.3.3,<0.3.4 || >0.3.4,<0.3.5 || >0.3.5,<0.3.6 || >0.3.6,<0.3.7 || >0.3.7,<0.3.8 || >0.3.8,<0.3.9 || >0.3.9,<0.3.10 || >0.3.10,<0.3.11 || >0.3.11,<0.3.12 || >0.3.12,<0.3.13 || >0.3.13,<0.3.14 || >0.3.14,<0.4.0"
-langgraph-checkpoint = ">=2.0.0,<3.0.0"
+langgraph-checkpoint = ">=2.0.4,<3.0.0"
 langgraph-sdk = ">=0.1.32,<0.2.0"
 
 [[package]]
 name = "langgraph-checkpoint"
-version = "2.0.3"
+version = "2.0.5"
 description = "Library with base interfaces for LangGraph checkpoint savers."
 optional = false
 python-versions = "<4.0.0,>=3.9.0"
 files = [
-    {file = "langgraph_checkpoint-2.0.3-py3-none-any.whl", hash = "sha256:70da073793e0750f4b9dfe5fbbe49b267c494987aaa8f2d04be23bfd0d8a6fd7"},
-    {file = "langgraph_checkpoint-2.0.3.tar.gz", hash = "sha256:d7aabbc78eeb5466301be2ede5e0b0b8e5dc97647fcbe79801f1326f85fc0344"},
+    {file = "langgraph_checkpoint-2.0.5-py3-none-any.whl", hash = "sha256:0e7e730ea9358577bdcdeb6a17d8f340bad59770e2895a8a7fc853a76e08400b"},
+    {file = "langgraph_checkpoint-2.0.5.tar.gz", hash = "sha256:48612cdaf98c40a998079d222abb196a61e504d04dea65c7820d738d42150cac"},
 ]
 
 [package.dependencies]
@@ -3157,4 +3157,4 @@ propcache = ">=0.2.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "7b64fdaaca2cecb8c0f9203c0e9857699bd96632b4795321d86524bada3db5b6"
+content-hash = "c3ebfdfb544d2e5fb35b7763da7bdb2aa32d9bd765cdf4f12d32842aad75d5af"
