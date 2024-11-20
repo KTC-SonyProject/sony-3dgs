@@ -3,8 +3,12 @@ from flet import (
     Column,
     Container,
     ControlEvent,
+    CrossAxisAlignment,
     IconButton,
     ListView,
+    MainAxisAlignment,
+    Markdown,
+    MarkdownExtensionSet,
     Page,
     ProgressBar,
     Row,
@@ -14,6 +18,7 @@ from flet import (
     border,
     colors,
     icons,
+    padding,
 )
 
 from app.ai.agent import ChatbotGraph
@@ -30,25 +35,58 @@ class Message:
 class ChatMessage(Row):
     def __init__(self, message:Message):
         super().__init__()
-        self.vertical_alignment = "start"
-        self.controls = [
-            # アイコン
-            CircleAvatar(
-                content=Text(self.get_initials(message.user_name)),
-                color=colors.WHITE,
-                bgcolor=self.get_avatar_color(message.user_name)
-            ),
-            # 名前とメッセージのカラム
-            Column(
-                [
-                    Text(message.user_name, weight="bold"),
-                    Text(message.text, selectable=True)
-                ],
-                tight=True,
-                spacing=5,
-                expand=True
-            )
-        ]
+        self.vertical_alignment = CrossAxisAlignment.START
+        if message.message_type == "ai":
+            self.alignment = MainAxisAlignment.START
+            self.controls = [
+                # アイコン
+                CircleAvatar(
+                    content=Text(self.get_initials(message.user_name)),
+                    color=colors.WHITE,
+                    bgcolor=self.get_avatar_color(message.user_name)
+                ),
+                # 名前とメッセージのカラム
+                Column(
+                    [
+                        Text(message.user_name, weight="bold"),
+                        Markdown(
+                            value=message.text,
+                            selectable=True,
+                            extension_set=MarkdownExtensionSet.GITHUB_WEB,
+                            on_tap_link=lambda e: self.page.launch_url(e.data),
+                        )
+                    ],
+                    tight=True,
+                    spacing=5,
+                    expand=True
+                )
+            ]
+        else:
+            self.alignment = MainAxisAlignment.END
+            self.controls = [
+                # 名前とメッセージのカラム
+                Column(
+                    [
+                        Text(message.user_name, weight="bold"),
+                        Markdown(
+                            value=message.text,
+                            selectable=True,
+                            extension_set=MarkdownExtensionSet.GITHUB_WEB,
+                            on_tap_link=lambda e: self.page.launch_url(e.data),
+                        ),
+                    ],
+                    tight=True,
+                    spacing=5,
+                    expand=True,
+                    horizontal_alignment=CrossAxisAlignment.END
+                ),
+                # # アイコン
+                # CircleAvatar(
+                #     content=Text(self.get_initials(message.user_name)),
+                #     color=colors.WHITE,
+                #     bgcolor=self.get_avatar_color(message.user_name)
+                # ),
+            ]
 
     # ユーザ名の頭文字の取得
     def get_initials(self, user_name: str) -> str:
@@ -82,7 +120,7 @@ class ChatBody(Column):
         super().__init__()
         self.page = page
         self._initialize_chatbot(session_id)
-        self.chat = ListView(expand=True, spacing=10, auto_scroll=True)
+        self.chat = ListView(expand=True, spacing=50, auto_scroll=True)
         self.new_message = TextField(
             hint_text="Write a message...",
             autocorrect=True,
@@ -103,7 +141,6 @@ class ChatBody(Column):
                 content=self.chat,
                 border=border.all(1, colors.OUTLINE),
                 border_radius=5,
-                padding=10,
                 expand=True  # Containerも縦に展開する
             ),
             self.progress,
@@ -152,7 +189,10 @@ class ChatBody(Column):
             print(e)
 
     def on_message(self, message: Message) -> None:
-        m = ChatMessage(message)
+        m = Container(
+            content=ChatMessage(message),
+            padding=padding.symmetric(horizontal=30, vertical=10)
+        )
         self.chat.controls.append(m)
         self.page.update()
 
