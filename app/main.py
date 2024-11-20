@@ -1,6 +1,7 @@
 import flet as ft
 from flet import (
     Page,
+    ScrollMode,
     app,
 )
 
@@ -9,7 +10,13 @@ from app.views import MyView
 
 def main(page: Page):
     page.title = "Sony × 3DGS App"
+    page.scroll = ScrollMode.AUTO
     page.padding = 10
+
+    page.fonts = {
+        "default": "/fonts/Noto_Sans_JP/static/NotoSansJP-Regular.ttf",
+        "bold": "/fonts/Noto_Sans_JP/static/NotoSansJP-Black.ttf",
+    }
 
     page.window.width = 1000
     page.window.height = 900
@@ -18,6 +25,7 @@ def main(page: Page):
 
 
     theme = ft.Theme()
+    theme.font_family = "default"
     theme.page_transitions.android = ft.PageTransitionTheme.NONE
     theme.page_transitions.ios = ft.PageTransitionTheme.NONE
     theme.page_transitions.macos = ft.PageTransitionTheme.NONE

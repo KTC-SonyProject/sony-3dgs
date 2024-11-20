@@ -29,17 +29,19 @@ class AppHeader(AppBar):
         self.chat_icon = IconButton(
             icon=icons.CHAT_BUBBLE_OUTLINE,
             tooltip="Chat",
-            on_click=self.tap_chat_icon,
+            on_click=lambda _: self.page.go("/chat"),
         )
         self.appbar_items = [
-            PopupMenuItem(text="Login"),
+            PopupMenuItem(text="Top", on_click=lambda _: self.page.go("/")),
+            PopupMenuItem(text="Home", on_click=lambda _: self.page.go("/home")),
             PopupMenuItem(),
-            PopupMenuItem(text="SignUp"),
+            PopupMenuItem(text="Voice", on_click=lambda e: self.page.go("/voice")),
+            PopupMenuItem(text="Documents", on_click=lambda e: self.page.go("/documents")),
             PopupMenuItem(),
-            PopupMenuItem(text="Settings"),
+            PopupMenuItem(text="Settings", on_click=lambda e: self.page.go("/settings")),
         ]
         self.leading=Icon(icons.TRIP_ORIGIN_ROUNDED)
-        self.leading_width=100
+        self.leading_width=60
         self.title=Text(value=self.page_title, size=32, text_align="center")
         self.center_title=False
         self.toolbar_height=75
@@ -65,9 +67,7 @@ class AppHeader(AppBar):
         self.toggle_dark_light_icon.selected = not self.toggle_dark_light_icon.selected
         self.page.update()
 
-    def tap_chat_icon(self, e):
-        self.page.route = "/chat"
-        self.page.update()
+
 
 
 if __name__ == '__main__':
