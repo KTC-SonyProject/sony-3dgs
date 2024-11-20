@@ -1,6 +1,7 @@
 import flet as ft
 from flet import (
     Page,
+    ScrollMode,
     app,
 )
 
@@ -9,6 +10,7 @@ from app.views import MyView
 
 def main(page: Page):
     page.title = "Sony × 3DGS App"
+    page.scroll = ScrollMode.AUTO
     page.padding = 10
 
     page.fonts = {

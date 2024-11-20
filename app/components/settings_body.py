@@ -1,19 +1,16 @@
 import json
+
 from flet import (
     Banner,
     Column,
-    Text,
-    ListTile,
-    TextField,
-    Switch,
-    ElevatedButton,
     Divider,
-    TextButton,
-    Page,
+    ElevatedButton,
     IconButton,
+    Page,
+    Text,
+    TextField,
     icons,
 )
-
 
 
 class SettingsBody(Column):

@@ -1,20 +1,13 @@
-from flet import (
-    CrossAxisAlignment,
-    MainAxisAlignment,
-    Page,
-    Row,
-    View,
-)
+from flet import CrossAxisAlignment, MainAxisAlignment, Page, ScrollMode, View
 
 from app.components.body import ContentBody
 from app.components.chat import ChatBody
-from app.components.header import AppHeader
-from app.components.sidebar import Sidebar
-from app.components.top_body import TopBody
-from app.components.home_body import HomeBody
-from app.components.voice_body import VoiceBody
 from app.components.documents_body import DocumentsBody
+from app.components.header import AppHeader
+from app.components.home_body import HomeBody
 from app.components.settings_body import SettingsBody
+from app.components.top_body import TopBody
+from app.components.voice_body import VoiceBody
 
 
 class MyLayout(View):
@@ -22,84 +15,49 @@ class MyLayout(View):
         super().__init__()
         self.page = page
         self.route = route
+        self.scroll = ScrollMode.AUTO
+        self.vertical_alignment = MainAxisAlignment.CENTER
+        self.horizontal_alignment = CrossAxisAlignment.CENTER
 
-        self.routes = {
-            '/': 'Top',
-            '/home': 'Home',
-            '/voice': 'Voice',
-            '/documents': 'Documents',
-            '/settings': 'Settings',
-            '/chat': 'Chat',
+        # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
+        if self.route == '/chat':
+            self.scroll = None
+
+        self.route_config = {
+            '/': {
+                'title': 'Top',
+                'layout': TopBody(self.page),
+            },
+            '/home': {
+                'title': 'Home',
+                'layout': HomeBody(self.page),
+            },
+            '/voice': {
+                'title': 'Voice',
+                'layout': VoiceBody(self.page),
+            },
+            '/documents': {
+                'title': 'Documents',
+                'layout': DocumentsBody(self.page),
+            },
+            '/settings': {
+                'title': 'Settings',
+                'layout': SettingsBody(self.page),
+            },
+            '/chat': {
+                'title': 'Chat',
+                'layout': ChatBody(self.page),
+            },
         }
 
-        self.page_title = self.routes.get(route, '404 Page Not Found')
+        self.default_route_config = {
+            'title': '404 Page Not Found',
+            'layout': ContentBody(self.page, '404 Page Not Found'),
+        }
+
+        self.route_info = self.route_config.get(self.route, self.default_route_config)
 
         self.controls = [
-            AppHeader(self.page, self.page_title.upper()),
-            self.get_body_layout(), # ルートごとに適切なレイアウトを取得
+            AppHeader(self.page, self.route_info['title'].upper()),
+            self.route_info['layout'], # ルートごとに適切なレイアウトを取得
         ]
-
-    def get_body_layout(self):
-        """ルートごとに適切なレイアウトを取得"""
-        if self.route == '/':
-            return Row(
-                alignment=MainAxisAlignment.START,
-                vertical_alignment=CrossAxisAlignment.START,
-                expand=True,
-                controls=[
-                    TopBody()
-                ],
-            )
-        elif self.route == '/home':
-            return Row(
-                alignment=MainAxisAlignment.CENTER,
-                vertical_alignment=CrossAxisAlignment.CENTER,
-                expand=True,
-                controls=[
-                    HomeBody()
-                ],
-            )
-        elif self.route == '/voice':
-            return Row(
-                alignment=MainAxisAlignment.START,
-                vertical_alignment=CrossAxisAlignment.START,
-                expand=True,
-                controls=[
-                    VoiceBody()
-                ],
-            )
-        elif self.route == '/documents':
-            return Row(
-                alignment=MainAxisAlignment.START,
-                vertical_alignment=CrossAxisAlignment.START,
-                expand=True,
-                controls=[
-                    DocumentsBody()
-                ],
-            )
-        elif self.route == '/settings':
-            return Row(
-                alignment=MainAxisAlignment.CENTER,
-                vertical_alignment=CrossAxisAlignment.START,
-                expand=True,
-                controls=[
-                    SettingsBody(self.page)
-                ],
-            )
-        elif self.route == '/chat':
-            return Row(
-                expand=True,
-                controls=[
-                    ChatBody(self.page)
-                ],
-            )
-        else:
-            return Row(
-                alignment=MainAxisAlignment.START,
-                vertical_alignment=CrossAxisAlignment.START,
-                expand=True,
-                controls=[
-                    Sidebar(self.page),
-                    ContentBody(self.page_title.upper() + ' Page')
-                ],
-            )
