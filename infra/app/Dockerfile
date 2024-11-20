@@ -11,6 +11,7 @@ libgstreamer1.0-dev \
 libgstreamer-plugins-base1.0-dev \
 libmpv-dev \
 mpv \
+postgresql-client \
 && apt clean \
 && rm -rf /var/lib/apt/lists/*
 
