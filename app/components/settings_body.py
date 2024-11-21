@@ -6,7 +6,9 @@ from flet import (
     Divider,
     ElevatedButton,
     IconButton,
+    NumbersOnlyInputFilter,
     Page,
+    Switch,
     Text,
     TextField,
     icons,
@@ -18,44 +20,64 @@ class SettingsBody(Column):
         super().__init__()
         self.page = page
         self.spacing = 10
-        self.settings_file = "local.settings.json"
 
         # 初期設定をロード
-        self.settings = self.load_settings()
+        self.settings_file = self.page.data["settings_file"]
+        self.settings = self.page.data["settings"]()
+
 
 
         # レイアウト
         self.controls = [
             Text("Settings", size=24, weight="bold"),
             Divider(),
-            Text("Account Information", size=18),
-            TextField(
-                label="Username",
-                value=self.settings.get("username", ""),
-                on_change=lambda e: self.settings.update({"username": e.control.value}),
+            Text("Database Settings", size=18),
+            Switch(
+                label="Use PostgreSQL",
+                value=self.settings.get("use_postgres", False),
+                on_change=lambda e: self.on_change_use_postgres(e),
             ),
-            TextField(
-                label="Password",
-                value=self.settings.get("password", ""),
-                on_change=lambda e: self.settings.update({"password": e.control.value}),
+            Column(
+                visible=self.settings.get("use_postgres", False),
+                controls=[
+                    TextField(
+                        label="Host",
+                        value=self.settings["postgres_config"].get("host", ""),
+                        on_change=lambda e: self.settings["postgres_config"].update({"host": e.control.value}),
+                    ),
+                    TextField(
+                        label="Port",
+                        value=self.settings["postgres_config"].get("port", ""),
+                        on_change=lambda e: self.settings["postgres_config"].update({"port": int(e.control.value)}),
+                        input_filter=NumbersOnlyInputFilter(),
+                    ),
+                    TextField(
+                        label="Database",
+                        value=self.settings["postgres_config"].get("database", ""),
+                        on_change=lambda e: self.settings["postgres_config"].update({"database": e.control.value}),
+                    ),
+                    TextField(
+                        label="User",
+                        value=self.settings["postgres_config"].get("user", ""),
+                        on_change=lambda e: self.settings["postgres_config"].update({"user": e.control.value}),
+                    ),
+                    TextField(
+                        label="Password",
+                        value=self.settings["postgres_config"].get("password", ""),
+                        on_change=lambda e: self.settings["postgres_config"].update({"password": e.control.value}),
+                    ),
+                ],
             ),
             Divider(),
             ElevatedButton("Save Settings", on_click=self.save_settings),
         ]
 
-    def load_settings(self):
-        """設定をファイルから読み込む"""
-        try:
-            with open(self.settings_file) as f:
-                return json.load(f)
-        except FileNotFoundError:
-            return {
-                "username": "",
-                "password": "",
-            }
-        except Exception as e:
-            print(f"Error loading settings: {e}")
-            return {}
+
+    def on_change_use_postgres(self, e):
+        """PostgreSQLの使用を切り替える"""
+        self.settings["use_postgres"] = e.control.value
+        self.controls[4].visible = e.control.value
+        self.page.update()
 
     def save_settings(self, e):
         """設定をファイルに保存する"""
