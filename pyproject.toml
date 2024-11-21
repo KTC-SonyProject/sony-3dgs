@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "SRD-3DGS-app"
+name = "spadge"
 version = "0.1.0"
 description = ""
 authors = ["snow7y <ktc2243020002@edu.kyoto-tech.ac.jp>"]
