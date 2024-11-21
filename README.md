@@ -1,14 +1,31 @@
-# SRD ＆ 3DGS application
+# Spadge
 
 ## 1. Introduction
 
-このアプリケーションはSony SRD(Spatial Reality Display)と3DGS(3D Gaussian Splatting)を用いたアプリケーションです。
+このアプリケーションはSonyのSRD(Spatial Reality Display)を用いて立体的な映像を表示させるのを容易にするアプリケーションです。
+主に次のような機能を提案します。
+- 3DGSの理論を用いて動画から高精度な3D空間を作成、Unityのアプリケーションに送信します。
+- 表示させている映像についての説明を生成AIを使用して音声会話で説明します。
+- 表示している映像の操作などもAgent技術を用いて音声でできるようにします。
 
 ## 2. Requirement
 
 ### application
-- Python 3.12
-- Poetry
+
+完全なアプリケーションはDockerでWEBアプリとして構築します。
+
+- Docker compose
+- Nvidia GPU
+- CUDA Toolkit
+- Visual Studio 2022
+
+詳細な要件は[NerfStudio](https://docs.nerf.studio/quickstart/installation.html#use-docker-image)の公式ドキュメントを参照してください。
+
+以下の条件に当てはまる場合は環境ごとのデスクトップアプリとして提供します。
+
+- すでに学習済みの3DGSデータ(PLYファイル)がある
+- 複数のユーザーからのアクセスがなくデスクトップアプリのみで充分である
+
 
 ### Unity
 
