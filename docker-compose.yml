@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   app:
-    container_name: app
+    container_name: spadge-app
     build:
       context: .
       dockerfile: ./infra/app/Dockerfile
@@ -16,7 +16,7 @@ services:
     restart: unless-stopped
 
   postgres:
-    container_name: main_db
+    container_name: spadge-main_db
     build: 
       context: .
       dockerfile: ./infra/postgres/Dockerfile
