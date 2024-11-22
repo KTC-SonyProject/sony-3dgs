@@ -93,12 +93,14 @@ class HomeBody(Container):
         super().__init__()
         self.page = page
         self.alignment = alignment.center
-        self.height = self.page.height
-        self.page.on_resized = self.on_resized
+        self.padding = 100
+        self.bgcolor = "red"
+        # self.height = self.page.height
+        # self.page.on_resized = self.on_resized
         self.content = HomeList(self.page)
 
     def on_resized(self, e):
-        self.height = self.page.height
+        # self.height = self.page.height
         self.page.update()
 
 
@@ -107,6 +109,7 @@ if __name__ == "__main__":
     def main(page: Page) -> None:
         page.title = "test app"
         page.scroll = "auto"
+        # page.expand = True
         chat_page = HomeBody(page)
         page.add(chat_page)
 
