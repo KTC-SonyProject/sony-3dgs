@@ -1,4 +1,11 @@
-from flet import CrossAxisAlignment, MainAxisAlignment, Page, ScrollMode, View
+from flet import (
+    CrossAxisAlignment,
+    MainAxisAlignment,
+    Page,
+    ScrollMode,
+    View,
+    TemplateRoute,
+) 
 
 from app.components.body import ContentBody
 from app.components.chat import ChatBody
@@ -22,6 +29,8 @@ class MyLayout(View):
         # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
         if self.route == '/chat':
             self.scroll = None
+
+        self.troute = TemplateRoute(self.route)
 
         self.route_config = {
             '/': {
@@ -55,7 +64,14 @@ class MyLayout(View):
             'layout': ContentBody(self.page, '404 Page Not Found'),
         }
 
-        self.route_info = self.route_config.get(self.route, self.default_route_config)
+        if self.troute.match("/documents/:document_id"):
+            self.route_info = {
+                'title': 'Document',
+                'layout': DocumentsBody(self.page, self.troute.document_id),
+            }
+            print(f"Document ID: {self.troute.document_id}")
+        else:
+            self.route_info = self.route_config.get(self.route, self.default_route_config)
 
         self.controls = [
             AppHeader(self.page, self.route_info['title'].upper()),
