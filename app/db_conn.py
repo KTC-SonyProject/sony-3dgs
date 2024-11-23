@@ -64,6 +64,6 @@ if __name__ == '__main__':
     settings = load_settings()
     db = DatabaseHandler(settings)
     db.connect()
-    result = db.fetch_query("SELECT * FROM sample;")
+    result = db.fetch_query("SELECT * FROM documents;")
     print(result)
     db.close_connection()
