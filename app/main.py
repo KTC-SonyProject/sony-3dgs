@@ -1,5 +1,3 @@
-import json
-
 import flet as ft
 from flet import (
     Page,
@@ -7,9 +5,8 @@ from flet import (
     app,
 )
 
-from app.views import MyView
 from app.settings import load_settings
-
+from app.views import MyView
 
 
 def main(page: Page):

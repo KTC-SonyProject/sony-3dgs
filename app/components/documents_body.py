@@ -1,28 +1,37 @@
 from flet import (
     Column,
-    Page,
-    Text,
     Container,
+    CrossAxisAlignment,
+    FloatingActionButton,
+    IconButton,
     Markdown,
     MarkdownExtensionSet,
-    Row,
-    CrossAxisAlignment,
-    IconButton,
-    Icon,
-    FloatingActionButton,
     NavigationRail,
     NavigationRailDestination,
     NavigationRailLabelType,
+    Page,
+    Row,
+    Text,
     alignment,
+    border_radius,
     colors,
     icons,
-    border_radius,
-    TextButton,
-    padding,
-    margin,
 )
 
 from app.db_conn import DatabaseHandler
+
+
+class RailDescription(Row):
+    def __init__(self, title: str, description: str):
+        super().__init__()
+        self.controls = [
+            Text(title),
+            IconButton(icon=icons.EDIT_NOTE, tooltip=description, on_click=self.click),
+        ]
+
+    def click(self, e):
+        pass
+
 
 
 class Sidebar(Container):
@@ -30,42 +39,28 @@ class Sidebar(Container):
         super().__init__()
         self.page = page
         self.nav_rail_visible = True
-        self.documents_list = documents_list
+        self.nav_rail_items = []
+        for document in documents_list:
+            self.nav_rail_items.append(
+                NavigationRailDestination(
+                    label_content=RailDescription(document[1], f"Edit to Document ID: {document[0]}"),
+                    label=document[1],
+                    selected_icon=icons.CHEVRON_RIGHT_ROUNDED,
+                    icon=icons.CHEVRON_RIGHT_OUTLINED,
+                    )
+                )
 
-        self.top_nav_items = [
-            NavigationRailDestination(
-                label_content=Text("Boards"),
-                label="Boards",
-                icon=icons.BOOK_OUTLINED,
-                selected_icon=icons.BOOK_OUTLINED
-            ),
-            NavigationRailDestination(
-                label_content=Text("Members"),
-                label="Members",
-                icon=icons.PERSON,
-                selected_icon=icons.PERSON
-            ),
-        ]
-
-        self.top_nav_rail = NavigationRail(
+        self.nav_rail = NavigationRail(
             selected_index=None,
-            label_type="all",
-            on_change=self.top_nav_change,
-            destinations=self.top_nav_items,
-            bgcolor=colors.BLUE_GREY,
-            extended=True,
-            height=110
-        )
-
-        self.bottom_nav_rail = NavigationRail(
-            selected_index=None,
-            label_type="all",
-            on_change=self.bottom_nav_change,
-            extended=True,
+            label_type=NavigationRailLabelType.ALL,
+            # min_width=100,
+            leading=FloatingActionButton(icon=icons.CREATE, text="ADD"),
+            group_alignment=-0.9,
+            destinations=self.nav_rail_items,
+            on_change=self.tap_nav_icon,
             expand=True,
-            bgcolor=colors.BLUE_GREY,
+            extended=True,
         )
-        self.get_document_rail()
         self.toggle_nav_rail_button = IconButton(
             icon=icons.ARROW_CIRCLE_LEFT,
             icon_color=colors.BLUE_GREY_400,
@@ -74,51 +69,21 @@ class Sidebar(Container):
             on_click=self.toggle_nav_rail,
             tooltip="Collapse Nav Bar",
         )
-
-        self.content=Column(
-            controls = [
-                Row([
-                    Text("Workspace"),
-                ], alignment="spaceBetween"),
-                # divider
+        self.visible = self.nav_rail_visible
+        self.content = Row(
+            controls=[
+                self.nav_rail,
                 Container(
                     bgcolor=colors.BLACK26,
                     border_radius=border_radius.all(30),
-                    height=1,
+                    # height=480,
                     alignment=alignment.center_right,
-                    width=220
+                    width=2
                 ),
-                self.top_nav_rail,
-                # divider
-                Container(
-                    bgcolor=colors.BLACK26,
-                    border_radius=border_radius.all(30),
-                    height=1,
-                    alignment=alignment.center_right,
-                    width=220
-                ),
-                self.bottom_nav_rail
+                self.toggle_nav_rail_button,
             ],
-            tight=True,
-        ),
-        self.padding=padding.all(15),
-        self.margin=margin.all(0),
-        self.width=250,
-        #expand=True,
-        self.bgcolor=colors.BLUE_GREY,
-        self.visible=self.nav_rail_visible,
-
-    def get_document_rail(self):
-        self.bottom_nav_rail.destinations = []
-        for document in self.documents_list:
-            self.bottom_nav_rail.destinations.append(
-                NavigationRailDestination(
-                    label_content=Text(document[1]),
-                    label=document[1],
-                    icon=icons.BOOK_OUTLINED,
-                    selected_icon=icons.BOOK_ROUNDED,
-                )
-            )
+            vertical_alignment=CrossAxisAlignment.START,
+        )
 
     def toggle_nav_rail(self, e):
         self.nav_rail.visible = not self.nav_rail.visible
@@ -128,22 +93,9 @@ class Sidebar(Container):
         )
         self.update()
 
-    def top_nav_change(self, e):
-        index = e if (type(e) is int) else e.control.selected_index
-        self.bottom_nav_rail.selected_index = None
-        self.top_nav_rail.selected_index = index
-        self.update()
-        if index == 0:
-            self.page.route = "/boards"
-        elif index == 1:
-            self.page.route = "/members"
-        self.page.update()
-
-    def bottom_nav_change(self, e):
-        index = e if (type(e) is int) else e.control.selected_index
-        self.top_nav_rail.selected_index = None
-        self.bottom_nav_rail.selected_index = index
-        self.page.go(f"/documents/{index}")
+    def tap_nav_icon(self, e):
+        document_id = e.control.selected_index + 1
+        self.page.go(f"/documents/{document_id}")
 
 
 class DocumentBody(Container):

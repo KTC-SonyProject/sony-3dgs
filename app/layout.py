@@ -3,9 +3,9 @@ from flet import (
     MainAxisAlignment,
     Page,
     ScrollMode,
-    View,
     TemplateRoute,
-) 
+    View,
+)
 
 from app.components.body import ContentBody
 from app.components.chat import ChatBody
@@ -22,13 +22,13 @@ class MyLayout(View):
         super().__init__()
         self.page = page
         self.route = route
-        self.scroll = ScrollMode.AUTO
+        self.scroll = None
         self.vertical_alignment = MainAxisAlignment.CENTER
         self.horizontal_alignment = CrossAxisAlignment.CENTER
 
         # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
-        if self.route == '/chat':
-            self.scroll = None
+        if self.route == '/':
+            self.scroll = ScrollMode.AUTO
 
         self.troute = TemplateRoute(self.route)
 
