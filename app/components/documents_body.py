@@ -1,28 +1,31 @@
 from flet import (
+    AlertDialog,
+    ButtonStyle,
     Column,
     Container,
     CrossAxisAlignment,
     Divider,
+    ElevatedButton,
     FloatingActionButton,
     IconButton,
+    InputBorder,
+    MainAxisAlignment,
     Markdown,
     MarkdownExtensionSet,
     NavigationRail,
     NavigationRailDestination,
     NavigationRailLabelType,
     Page,
+    RoundedRectangleBorder,
     Row,
     Text,
     TextButton,
     TextField,
+    VerticalDivider,
     alignment,
     border_radius,
     colors,
     icons,
-    VerticalDivider,
-    AlertDialog,
-    MainAxisAlignment,
-    InputBorder,
     padding,
 )
 
@@ -68,7 +71,7 @@ class Sidebar(Container):
             selected_index=None,
             label_type=NavigationRailLabelType.ALL,
             # min_width=100,
-            leading=FloatingActionButton(icon=icons.CREATE, text="ADD", on_click=self.open_modal),
+            leading=FloatingActionButton(icon=icons.CREATE, text="ADD DOCUMENT", on_click=self.open_modal),
             group_alignment=-0.9,
             destinations=self.nav_rail_items,
             on_change=self.tap_nav_icon,
@@ -88,7 +91,7 @@ class Sidebar(Container):
         self.dlg_modal = AlertDialog(
             modal=True,
             inset_padding=padding.symmetric(vertical=40, horizontal=100),
-            title=Text("Alert"),
+            title=Text("新規追加"),
             content=TextField(
                 label="タイトル名",
                 border=InputBorder.UNDERLINE,
@@ -242,6 +245,7 @@ class EditBody(Row):
             expand=True,
             border_color=colors.TRANSPARENT,
             on_change=self.update_preview,
+            hint_text="Document here...",
         )
         self.document_body = DocumentBody(self.page, content=self.text_field.value)
 
@@ -272,31 +276,96 @@ class EditDocumentBody(Column):
         self.horizontal_alignment = CrossAxisAlignment.CENTER
         self.spacing = 10
 
+        self.dlg_modal = AlertDialog(
+            title=Text("※注意※", color=colors.RED),
+            modal=True,
+            content=Text("ドキュメントの変更内容を保存せずに戻りますか？"),
+            actions=[
+                ElevatedButton(
+                    text="保存して戻る",
+                    style=ButtonStyle(
+                        shape=RoundedRectangleBorder(radius=10),
+                    ),
+                    on_click=self.save_document,
+                ),
+                TextButton(text="保存せずに戻る", on_click=self.modal_yes_action),
+                TextButton(text="変更を続ける", on_click=self.modal_no_action),
+            ],
+            actions_alignment=MainAxisAlignment.CENTER,
+        )
+
         self.db = DatabaseHandler(self.page.data["settings"]())
 
         self.document_id = document_id
+        self.document_title = self.get_document_title()
 
         self.controls = [
             Row(
                 controls=[
-                    IconButton(icon=icons.ARROW_BACK, on_click=self.back_page, tooltip="Back"),
-                    TextButton(text="Save", on_click=self.save_document, icon=icons.SAVE),
+                    Row(
+                        controls=[
+                            IconButton(icon=icons.ARROW_BACK, on_click=self.open_modal, tooltip="Back"),
+                            TextField(
+                                value=self.document_title,
+                                border=InputBorder.UNDERLINE,
+                            ),
+                        ],
+                    ),
+                    Row(
+                        controls=[
+                            TextButton(text="Save", on_click=self.save_document, icon=icons.SAVE),
+                            TextButton(text="Delete", on_click=self.delete_document, icon=icons.DELETE),
+                        ],
+                    ),
                 ],
-                alignment=alignment.center_left,
+                alignment=MainAxisAlignment.SPACE_BETWEEN,
             ),
             Divider(color=colors.BLUE_GREY_400),
             EditBody(self.page, self.document_id),
         ]
+
+    def get_document_title(self):
+        self.db.connect()
+        result = self.db.fetch_query("SELECT title FROM documents WHERE document_id = %s", (self.document_id,))
+        self.db.close_connection()
+        return result[0][0]
 
     def back_page(self, e):
         self.page.go(f"/documents/{self.document_id}")
 
     def save_document(self, e):
         self.db.connect()
+        if self.document_title != self.controls[0].controls[0].controls[1].value:
+            self.db.execute_query(
+                "UPDATE documents SET title = %s WHERE document_id = %s",
+                (self.controls[0].controls[0].controls[1].value, self.document_id)
+            )
         self.db.execute_query(
             "UPDATE documents SET content = %s WHERE document_id = %s",
             (self.controls[2].text_field.value, self.document_id)
         )
         self.db.close_connection()
         self.page.go(f"/documents/{self.document_id}")
+
+    def delete_document(self, e):
+        self.db.connect()
+        self.db.execute_query(
+            "DELETE FROM documents WHERE document_id = %s",
+            (self.document_id,)
+        )
+        self.db.close_connection()
+        self.page.go("/documents")
+
+    def open_modal(self, e):
+        self.page.overlay.append(self.dlg_modal)
+        self.dlg_modal.open = True
+        self.page.update()
+
+    def modal_yes_action(self, e):
+        self.dlg_modal.open = False
+        self.page.go(f"/documents/{self.document_id}")
+
+    def modal_no_action(self, e):
+        self.dlg_modal.open = False
+        self.page.update()
 
