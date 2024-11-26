@@ -3,7 +3,7 @@ import logging
 
 import psycopg2
 
-from app.main import load_settings
+from app.settings import load_settings
 
 # ロギングの設定
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +64,12 @@ if __name__ == '__main__':
     settings = load_settings()
     db = DatabaseHandler(settings)
     db.connect()
-    result = db.fetch_query("SELECT * FROM sample;")
+    result = db.fetch_query("SELECT * FROM documents;")
     print(result)
+
+    # IDが1のドキュメントを取得
+    print("\n-----------------\n")
+    result = db.fetch_query("SELECT * FROM documents WHERE document_id = %s;", (1,))
+    print(result)
+
     db.close_connection()

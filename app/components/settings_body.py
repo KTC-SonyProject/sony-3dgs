@@ -3,6 +3,7 @@ import json
 from flet import (
     Banner,
     Column,
+    CrossAxisAlignment,
     Divider,
     ElevatedButton,
     IconButton,
@@ -20,6 +21,8 @@ class SettingsBody(Column):
         super().__init__()
         self.page = page
         self.spacing = 10
+        # self.alignment = MainAxisAlignment.START
+        self.horizontal_alignment = CrossAxisAlignment.START
 
         # 初期設定をロード
         self.settings_file = self.page.data["settings_file"]

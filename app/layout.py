@@ -1,8 +1,15 @@
-from flet import CrossAxisAlignment, MainAxisAlignment, Page, ScrollMode, View
+from flet import (
+    CrossAxisAlignment,
+    MainAxisAlignment,
+    Page,
+    ScrollMode,
+    TemplateRoute,
+    View,
+)
 
 from app.components.body import ContentBody
 from app.components.chat import ChatBody
-from app.components.documents_body import DocumentsBody
+from app.components.documents_body import DocumentsBody, EditDocumentBody
 from app.components.header import AppHeader
 from app.components.home_body import HomeBody
 from app.components.settings_body import SettingsBody
@@ -15,13 +22,15 @@ class MyLayout(View):
         super().__init__()
         self.page = page
         self.route = route
-        self.scroll = ScrollMode.AUTO
+        self.scroll = None
         self.vertical_alignment = MainAxisAlignment.CENTER
         self.horizontal_alignment = CrossAxisAlignment.CENTER
 
         # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
-        if self.route == '/chat':
-            self.scroll = None
+        if self.route == '/':
+            self.scroll = ScrollMode.AUTO
+
+        self.troute = TemplateRoute(self.route)
 
         self.route_config = {
             '/': {
@@ -55,7 +64,20 @@ class MyLayout(View):
             'layout': ContentBody(self.page, '404 Page Not Found'),
         }
 
-        self.route_info = self.route_config.get(self.route, self.default_route_config)
+        if self.troute.match("/documents/:document_id"):
+            self.route_info = {
+                'title': 'Document',
+                'layout': DocumentsBody(self.page, self.troute.document_id),
+            }
+            print(f"Document ID: {self.troute.document_id}")
+        elif self.troute.match("/documents/:document_id/edit"):
+            self.route_info = {
+                "title": "Edit Document",
+                "layout": EditDocumentBody(self.page, self.troute.document_id),
+            }
+            print(f"Edit Document ID: {self.troute.document_id}")
+        else:
+            self.route_info = self.route_config.get(self.route, self.default_route_config)
 
         self.controls = [
             AppHeader(self.page, self.route_info['title'].upper()),
