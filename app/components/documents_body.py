@@ -20,6 +20,10 @@ from flet import (
     colors,
     icons,
     VerticalDivider,
+    AlertDialog,
+    MainAxisAlignment,
+    InputBorder,
+    padding,
 )
 
 from app.db_conn import DatabaseHandler
@@ -46,6 +50,8 @@ class Sidebar(Container):
     def __init__(self, page:Page, documents_list: list):
         super().__init__()
         self.page = page
+        self.db = DatabaseHandler(self.page.data["settings"]())
+
         self.nav_rail_visible = True
         self.nav_rail_items = []
         for document in documents_list:
@@ -62,7 +68,7 @@ class Sidebar(Container):
             selected_index=None,
             label_type=NavigationRailLabelType.ALL,
             # min_width=100,
-            leading=FloatingActionButton(icon=icons.CREATE, text="ADD"),
+            leading=FloatingActionButton(icon=icons.CREATE, text="ADD", on_click=self.open_modal),
             group_alignment=-0.9,
             destinations=self.nav_rail_items,
             on_change=self.tap_nav_icon,
@@ -78,6 +84,24 @@ class Sidebar(Container):
             tooltip="Collapse Nav Bar",
         )
         self.visible = self.nav_rail_visible
+
+        self.dlg_modal = AlertDialog(
+            modal=True,
+            inset_padding=padding.symmetric(vertical=40, horizontal=100),
+            title=Text("Alert"),
+            content=TextField(
+                label="タイトル名",
+                border=InputBorder.UNDERLINE,
+                filled=True,
+                hint_text="Enter title name here",
+            ),
+            actions=[
+                TextButton(text="Yes", on_click=self.modal_yes_action),
+                TextButton(text="No", on_click=self.modal_no_action),
+            ],
+            actions_alignment=MainAxisAlignment.END,
+        )
+
         self.content = Row(
             controls=[
                 self.nav_rail,
@@ -104,6 +128,36 @@ class Sidebar(Container):
     def tap_nav_icon(self, e):
         document_id = e.control.selected_index + 1
         self.page.go(f"/documents/{document_id}")
+
+    def open_modal(self, e):
+        e.control.page.overlay.append(self.dlg_modal)
+        self.dlg_modal.open = True
+        e.control.page.update()
+
+    def modal_yes_action(self, e):
+        try:
+            if self.dlg_modal.content.value == "":
+                raise Exception("タイトル名が入力されていません")
+            self.db.connect()
+            self.db.execute_query(
+                "INSERT INTO documents (title, content) VALUES (%s, %s)",
+                (self.dlg_modal.content.value, "")
+            )
+            result = self.db.fetch_query("SELECT document_id FROM documents ORDER BY created_at DESC LIMIT 1;")
+            print(result)
+            self.db.close_connection()
+            self.dlg_modal.open = False
+            self.page.go(f"/documents/{result[0][0]}/edit")
+        except Exception as error:
+            print(error)
+            self.dlg_modal.content.error_text = str(error)
+            e.control.page.update()
+
+
+    def modal_no_action(self, e):
+        self.dlg_modal.open = False
+        e.control.page.update()
+        print("No clicked")
 
 
 class DocumentBody(Container):
@@ -135,6 +189,8 @@ class DocumentsBody(Row):
         self.vertical_alignment = CrossAxisAlignment.START
         self.expand = True
 
+
+
         self.settings = self.page.data["settings"]()
         self.db = DatabaseHandler(self.settings)
 
@@ -164,6 +220,8 @@ class DocumentsBody(Row):
         result = self.db.fetch_query("SELECT document_id, title FROM documents ORDER BY document_id ASC;")
         self.db.close_connection()
         return result
+
+
 
 
 class EditBody(Row):
@@ -223,7 +281,6 @@ class EditDocumentBody(Column):
                 controls=[
                     IconButton(icon=icons.ARROW_BACK, on_click=self.back_page, tooltip="Back"),
                     TextButton(text="Save", on_click=self.save_document, icon=icons.SAVE),
-                    Text("Edit Document"),
                 ],
                 alignment=alignment.center_left,
             ),
