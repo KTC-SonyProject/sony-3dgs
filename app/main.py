@@ -7,6 +7,7 @@ from flet import (
 
 from app.settings import load_settings
 from app.views import MyView
+from app.db_conn import DatabaseHandler
 
 
 def main(page: Page):
@@ -14,9 +15,11 @@ def main(page: Page):
     page.scroll = ScrollMode.AUTO
     page.padding = 10
 
+
     page.data = {
         "settings_file": "local.settings.json",
         "settings": load_settings,
+        "db": DatabaseHandler(load_settings()),
     }
 
     page.fonts = {

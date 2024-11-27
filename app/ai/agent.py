@@ -6,10 +6,12 @@ from typing import Annotated, Any
 from IPython.display import Image, display
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing_extensions import TypedDict
+from psycopg_pool import ConnectionPool
 
 from app.ai.settings import llm_settings
 from app.ai.tools import tools
@@ -41,8 +43,12 @@ class ChatbotGraph:
         self.graph = self.graph_builder.compile(checkpointer=self.memory)
 
     def _initialize_memory(self) -> None:
-        self.memory = SqliteSaver(sqlite3.connect("chat_memory.db", check_same_thread=False))
-        pass
+        # self.memory = SqliteSaver(sqlite3.connect("chat_memory.db", check_same_thread=False))
+        self.DB_URI = "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
+        self.connection_kwargs = {"autocommit": True, "prepare_threshold": 0}
+        self.pool = ConnectionPool(conninfo=self.DB_URI, max_size=20, kwargs=self.connection_kwargs, open=True)
+        self.memory = PostgresSaver(self.pool)
+        self.memory.setup()
 
     def set_memory_config(self, thread_id: str) -> RunnableConfig:
         self.memory_config: RunnableConfig = {"configurable": {"thread_id": thread_id}}

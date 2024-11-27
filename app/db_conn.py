@@ -1,7 +1,8 @@
 # postgresqlとの接続を行うモジュール
 import logging
+import sqlite3
 
-import psycopg2
+from psycopg_pool import ConnectionPool
 
 from app.settings import load_settings
 
@@ -10,54 +11,92 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DatabaseHandler:
-    def __init__(self, settings: dict):
-        """データベース接続情報を初期化する"""
+    def __init__(self, settings: dict, use_connection_kwargs: bool = False):
+        """
+        データベース接続情報を初期化するクラス
+        :param settings: 設定辞書 (PostgreSQL/SQLite両対応)
+        :param use_connection_kwargs: PostgreSQLで接続パラメータを追加するか
+        """
         self.settings = settings
         self.use_postgres = settings.get("use_postgres", False)
-        self.connection = None
+        self.use_connection_kwargs = use_connection_kwargs
 
-    def connect(self):
-        """PostgreSQLデータベースに接続する"""
-        try:
-            postgres_config = self.settings.get("postgres_config")
-            self.connection = psycopg2.connect(**postgres_config)
-            logger.info("Successfully connected to the PostgreSQL database.")
-        except Exception as error:
-            logger.error(f"Error connecting to PostgreSQL: {error}")
-            self.connection = None
+        if self.use_postgres:
+            self._init_postgres()
+        else:
+            self._init_sqlite()
+
+    def _init_postgres(self):
+        """PostgreSQLデータベースに接続するための初期化を行う"""
+        postgres_config = self.settings.get("postgres_config")
+        db_uri = f"postgresql://{postgres_config['user']}:{postgres_config['password']}@{postgres_config['host']}:{postgres_config['port']}/{postgres_config['database']}?sslmode=disable"
+        if self.use_connection_kwargs:
+            kwargs = {"autocommit": True, "prepare_threshold": 0}
+            self.pool = ConnectionPool(conninfo=db_uri, max_size=20, kwargs=kwargs, open=True)
+            logging.info("PostgreSQL connection pool is initialized with connection kwargs.")
+        else:
+            self.pool = ConnectionPool(conninfo=db_uri, max_size=20, open=True)
+            logging.info("PostgreSQL connection pool is initialized.")
+
+    def _init_sqlite(self):
+        """SQLiteデータベースに接続するための初期化を行う"""
+        sqlite_config = self.settings.get("sqlite_config")
+        self.connection = sqlite3.connect(sqlite_config["database"], check_same_thread=False)
+        logging.info("SQLite connection is initialized.")
 
     def execute_query(self, query, params=None):
-        """クエリを実行する（データ挿入や更新などの変更系）"""
-        if self.connection is None:
-            self.connect()
-        if self.connection:
-            try:
-                with self.connection.cursor() as cursor:
-                    cursor.execute(query, params)
-                    self.connection.commit()
-                    logger.info("Query executed successfully.")
-            except Exception as error:
-                logger.error(f"Error executing query: {error}")
+        """
+        クエリを実行する（データ挿入や更新などの変更系）
+        """
+        try:
+            if self.use_postgres:
+                with self.pool.connection() as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(query, params)
+                        conn.commit()
+                        logger.info("Query executed successfully (PostgreSQL).")
+            else:
+                cursor = self.connection.cursor()
+                cursor.execute(query, params or [])
+                self.connection.commit()
+                logger.info("Query executed successfully (SQLite).")
+                self.close_connection()
+        except Exception as error:
+            logger.error(f"Error executing query: {error}")
 
-    def fetch_query(self, query, params=None):
-        """クエリを実行し結果を取得する（データ取得系）"""
-        if self.connection is None:
-            self.connect()
-        if self.connection:
-            try:
-                with self.connection.cursor() as cursor:
-                    cursor.execute(query, params)
-                    result = cursor.fetchall()
-                    return result
-            except Exception as error:
-                logger.error(f"Error fetching query: {error}")
-                return None
+    def fetch_query(self, query, params=None) -> list:
+        """
+        クエリを実行し結果を取得する（データ取得系）
+        """
+        try:
+            if self.use_postgres:
+                with self.pool.connection() as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(query, params)
+                        result = cursor.fetchall()
+                        logger.info("Query fetched successfully (PostgreSQL).")
+                        return result
+            else:
+                cursor = self.connection.cursor()
+                cursor.execute(query, params or [])
+                result = cursor.fetchall()
+                logger.info("Query fetched successfully (SQLite).")
+                self.close_connection()
+                return result
+        except Exception as error:
+            logger.error(f"Error fetching query: {error}")
+            raise error
 
     def close_connection(self):
-        """データベース接続を閉じる"""
-        if self.connection:
+        """
+        データベース接続を閉じる
+        """
+        if self.use_postgres:
+            self.pool.close()
+            logger.info("PostgreSQL connection pool is closed.")
+        elif self.connection:
             self.connection.close()
-            logger.info("PostgreSQL connection is closed.")
+            logger.info("SQLite connection is closed.")
 
 
 if __name__ == '__main__':
