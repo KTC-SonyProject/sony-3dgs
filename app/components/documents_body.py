@@ -21,6 +21,7 @@ from flet import (
     Text,
     TextButton,
     TextField,
+    TextOverflow,
     VerticalDivider,
     alignment,
     border_radius,
@@ -36,11 +37,11 @@ class RailDescription(Row):
         self.page = page
         self.title = title
         self.id = id
-        self.expand = True
+        # self.expand = True
         self.alignment = MainAxisAlignment.SPACE_BETWEEN
 
         self.controls = [
-            Text(self.title),
+            Text(self.title, width=150, max_lines=1, overflow=TextOverflow.ELLIPSIS),
             IconButton(icon=icons.EDIT_NOTE, tooltip="Edit Documents", on_click=self.click),
         ]
 
@@ -62,11 +63,8 @@ class Sidebar(Container):
                 NavigationRailDestination(
                     label_content=RailDescription(self.page, document[1], document[0]),
                     label=document[1],
-                    icon_content=IconButton(
-                        icon=icons.EDIT_NOTE,
-                        tooltip="Edit Documents",
-                        on_click=lambda e, id=document[0]: self.click(e, id)
-                    ),
+                    selected_icon=icons.CHEVRON_RIGHT_ROUNDED,
+                    icon=icons.CHEVRON_RIGHT_OUTLINED,
                 )
             )
 
