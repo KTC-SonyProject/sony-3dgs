@@ -1,3 +1,4 @@
+
 from flet import (
     AlertDialog,
     ButtonStyle,
@@ -29,6 +30,8 @@ from flet import (
     icons,
     padding,
 )
+
+from app.ai.agent import add_document_to_vectorstore
 
 
 class RailDescription(Row):
@@ -337,6 +340,8 @@ class EditDocumentBody(Column):
             "UPDATE documents SET content = %s WHERE document_id = %s",
             (self.controls[2].text_field.value, self.document_id)
         )
+        add_document_to_vectorstore(self.controls[2].text_field.value, self.document_id)
+
         self.page.go(f"/documents/{self.document_id}")
 
     def delete_document(self, e):

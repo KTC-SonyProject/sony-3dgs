@@ -168,3 +168,4 @@ cython_debug/
 chat_memory.*
 local.*
 db/postgres/data/
+chroma_db/

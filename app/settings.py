@@ -1,11 +1,14 @@
 import json
 
 
-def load_settings():
+def load_settings(return_custom: str = None):
     """設定をファイルから読み込む"""
     try:
         with open("local.settings.json") as f:
-            return json.load(f)
+            settings = json.load(f)
+        if return_custom:
+            return settings.get(return_custom)
+        return settings
     except FileNotFoundError:
         settings = {
             "use_postgres": False,
