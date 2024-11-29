@@ -15,6 +15,7 @@ from psycopg_pool import ConnectionPool
 
 from app.ai.settings import llm_settings
 from app.ai.tools import tools
+from app.settings import load_settings
 
 
 class State(TypedDict):
@@ -43,12 +44,15 @@ class ChatbotGraph:
         self.graph = self.graph_builder.compile(checkpointer=self.memory)
 
     def _initialize_memory(self) -> None:
-        # self.memory = SqliteSaver(sqlite3.connect("chat_memory.db", check_same_thread=False))
-        self.DB_URI = "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
-        self.connection_kwargs = {"autocommit": True, "prepare_threshold": 0}
-        self.pool = ConnectionPool(conninfo=self.DB_URI, max_size=20, kwargs=self.connection_kwargs, open=True)
-        self.memory = PostgresSaver(self.pool)
-        self.memory.setup()
+        settings = load_settings()
+        if settings["use_postgres"]:
+            self.DB_URI = "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
+            self.connection_kwargs = {"autocommit": True, "prepare_threshold": 0}
+            self.pool = ConnectionPool(conninfo=self.DB_URI, max_size=20, kwargs=self.connection_kwargs, open=True)
+            self.memory = PostgresSaver(self.pool)
+            self.memory.setup()
+        else:
+            self.memory = SqliteSaver(sqlite3.connect("chat_memory.db", check_same_thread=False))
 
     def set_memory_config(self, thread_id: str) -> RunnableConfig:
         self.memory_config: RunnableConfig = {"configurable": {"thread_id": thread_id}}

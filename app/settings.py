@@ -16,6 +16,9 @@ def load_settings():
                 "user": "postgres",
                 "password": "postgres",
             },
+            "sqlite_config": {
+                "database": "main.db",
+            },
         }
         with open("local.settings.json", "w") as f:
             json.dump(settings, f, indent=4)
