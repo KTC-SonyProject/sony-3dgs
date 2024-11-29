@@ -10,17 +10,16 @@ services:
         - GROUP_ID=1000
     volumes:
       - .:/app
-    command: sleep infinity
     depends_on:
       - postgres
-    restart: unless-stopped
+    # ports:
+    #   - "8000:8000"
 
   postgres:
     container_name: spadge-main_db
     build: 
       context: .
       dockerfile: ./infra/postgres/Dockerfile
-    restart: unless-stopped
     ports:
       - "5432:5432"
     volumes:

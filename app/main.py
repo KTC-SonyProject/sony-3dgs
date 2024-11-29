@@ -45,5 +45,5 @@ def main(page: Page):
 
     MyView(page)
 
-if __name__ == '__main__':
-    app(target=main)
+
+app(target=main, port=8000)
