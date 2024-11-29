@@ -5,13 +5,13 @@ from typing import Annotated, Any
 
 from IPython.display import Image, display
 from langchain_core.runnables.config import RunnableConfig
-from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.checkpoint.postgres import PostgresSaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from typing_extensions import TypedDict
 from psycopg_pool import ConnectionPool
+from typing_extensions import TypedDict
 
 from app.ai.settings import llm_settings
 from app.ai.tools import tools

@@ -5,9 +5,9 @@ from flet import (
     app,
 )
 
+from app.db_conn import DatabaseHandler
 from app.settings import load_settings
 from app.views import MyView
-from app.db_conn import DatabaseHandler
 
 
 def main(page: Page):
