@@ -31,7 +31,7 @@ from flet import (
     padding,
 )
 
-from app.ai.agent import add_document_to_vectorstore
+from app.ai.vector_db import indexing_document, delete_document_from_vectorstore
 
 
 class RailDescription(Row):
@@ -331,16 +331,20 @@ class EditDocumentBody(Column):
         self.page.go(f"/documents/{self.document_id}")
 
     def save_document(self, e):
-        if self.document_title != self.controls[0].controls[0].controls[1].value:
-            self.db.execute_query(
-                "UPDATE documents SET title = %s WHERE document_id = %s",
-                (self.controls[0].controls[0].controls[1].value, self.document_id)
-            )
+        # if self.document_title != self.controls[0].controls[0].controls[1].value:
+        #     self.db.execute_query(
+        #         "UPDATE documents SET title = %s WHERE document_id = %s",
+        #         (self.controls[0].controls[0].controls[1].value, self.document_id)
+        #     )
         self.db.execute_query(
-            "UPDATE documents SET content = %s WHERE document_id = %s",
-            (self.controls[2].text_field.value, self.document_id)
+            "UPDATE documents SET title = %s, content = %s WHERE document_id = %s",
+            (
+                self.controls[0].controls[0].controls[1].value,
+                self.controls[2].text_field.value,
+                self.document_id
+            )
         )
-        add_document_to_vectorstore(self.controls[2].text_field.value, self.document_id)
+        indexing_document(self.controls[2].text_field.value, self.document_id)
 
         self.page.go(f"/documents/{self.document_id}")
 
@@ -349,6 +353,7 @@ class EditDocumentBody(Column):
             "DELETE FROM documents WHERE document_id = %s",
             (self.document_id,)
         )
+        delete_document_from_vectorstore(self.document_id)
         self.page.go("/documents")
 
     def open_modal(self, e):

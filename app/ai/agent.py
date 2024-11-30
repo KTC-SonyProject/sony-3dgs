@@ -2,11 +2,8 @@ import os
 import sqlite3
 from collections.abc import Iterator
 from typing import Annotated, Any
-from uuid import uuid4
 
 from IPython.display import Image, display
-from langchain_chroma import Chroma
-from langchain_core.documents import Document
 from langchain_core.runnables.config import RunnableConfig
 from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.checkpoint.sqlite import SqliteSaver
@@ -16,45 +13,9 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from psycopg_pool import ConnectionPool
 from typing_extensions import TypedDict
 
-from app.ai.settings import embedding_model_settings, llm_settings
+from app.ai.settings import llm_settings
 from app.ai.tools import tools
 from app.settings import load_settings
-
-
-def create_document_obj(content: str, document_id: int) -> list[Document]:
-    """
-    ドキュメントオブジェクトを作成する関数
-    """
-    document = Document(
-        page_content=content,
-        metadata={
-            "source": document_id
-        }
-    )
-    return [document]
-
-
-def get_vector_store():
-    """
-    ベクトルストアを作成する関数
-    """
-    embeddings = embedding_model_settings()
-    return Chroma(
-        collection_name="document_collection",
-        embedding_function=embeddings,
-        persist_directory="./chroma_db",
-    )
-
-def add_document_to_vectorstore(content: str, document_id: int):
-    """
-    ドキュメントをベクトルストアに追加する関数
-    """
-    documents = create_document_obj(content, document_id)
-    uuids = [str(uuid4()) for _ in range(len(documents))]
-    vector_store = get_vector_store()
-    vector_store.add_documents(documents=documents, ids=uuids)
-    print("Document added to vector store.")
-
 
 
 class State(TypedDict):
@@ -123,19 +84,19 @@ class ChatbotGraph:
 
 
 if __name__ == "__main__":
-    # import pprint
+    import pprint
 
-    # chatbot_graph = ChatbotGraph(verbose=True)
+    chatbot_graph = ChatbotGraph(verbose=True)
 
-    # chatbot_graph.draw_graph()
+    chatbot_graph.draw_graph()
 
-    # config = {"configurable": {"thread_id": "1"}}
-    # chat_history = chatbot_graph.graph.get_state(config)
-    # messages_list = chat_history.values["messages"]
-    # pprint.pprint(messages_list)
-    # for i, message in enumerate(messages_list, start=1):
-    #     sender = "ユーザー" if "HumanMessage" in str(type(message)) else "アシスタント"
-    #     print(f"{i}. **{sender}:** {message.content}")
+    config = {"configurable": {"thread_id": "1"}}
+    chat_history = chatbot_graph.graph.get_state(config)
+    messages_list = chat_history.values["messages"]
+    pprint.pprint(messages_list)
+    for i, message in enumerate(messages_list, start=1):
+        sender = "ユーザー" if "HumanMessage" in str(type(message)) else "アシスタント"
+        print(f"{i}. **{sender}:** {message.content}")
 
 
 
@@ -150,10 +111,3 @@ if __name__ == "__main__":
     #             print("Assistant:", response.pretty_print())
     #     except Exception as e:
     #         raise ValueError("ストリーム更新に失敗しました。") from e
-
-    results = get_vector_store().similarity_search(
-        "test",
-    )
-    print(results)
-    for res in results:
-        print(f"* {res.page_content} [{res.metadata}]")
