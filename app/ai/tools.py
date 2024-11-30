@@ -5,8 +5,6 @@ from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
 from app.ai.vector_db import get_vector_store
-from app.db_conn import DatabaseHandler
-from app.settings import load_settings
 
 
 class SearchDocumentInput(BaseModel):
