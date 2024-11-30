@@ -53,7 +53,7 @@ class ChatMessage(Row):
                             value=message.text,
                             selectable=True,
                             extension_set=MarkdownExtensionSet.GITHUB_WEB,
-                            on_tap_link=lambda e: self.page.launch_url(e.data),
+                            on_tap_link=self.tap_link,
                         )
                     ],
                     tight=True,
@@ -72,7 +72,7 @@ class ChatMessage(Row):
                             value=message.text,
                             selectable=True,
                             extension_set=MarkdownExtensionSet.GITHUB_WEB,
-                            on_tap_link=lambda e: self.page.launch_url(e.data),
+                            on_tap_link=self.tap_link,
                         ),
                     ],
                     tight=True,
@@ -109,8 +109,14 @@ class ChatMessage(Row):
             colors.TEAL,
             colors.YELLOW,
         ]
-
         return colors_lookup[hash(user_name) % len(colors_lookup)]
+
+    def tap_link(self, e: ControlEvent) -> None:
+        try:
+            int(e.data)
+            self.page.go(f"/documents/{e.data}")
+        except Exception:
+            self.page.launch_url(e.data)
 
 
 

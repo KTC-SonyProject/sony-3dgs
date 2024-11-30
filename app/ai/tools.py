@@ -3,6 +3,8 @@ from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
 from app.ai.vector_db import get_vector_store
+from app.db_conn import DatabaseHandler
+from app.settings import load_settings
 
 
 class SearchDocumentInput(BaseModel):
@@ -12,10 +14,14 @@ class SearchDocumentInput(BaseModel):
 def search_documents(query: str) -> list[Document]:
     """
     ドキュメントを検索する関数
+    この関数で取得したドキュメントをユーザーに返す場合は"[参考にしたドキュメント](metadataのsourceに格納されている数値)"のような形で返す
     """
     results = get_vector_store().similarity_search(
         query=query,
     )
+    # results = {
+    #     "content": res["content"],
+    # }
     return results
 
 
