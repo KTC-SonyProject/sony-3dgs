@@ -68,6 +68,7 @@ class Sidebar(Container):
                     label=document[1],
                     selected_icon=icons.CHEVRON_RIGHT_ROUNDED,
                     icon=icons.CHEVRON_RIGHT_OUTLINED,
+                    data=document[0],
                 )
             )
 
@@ -133,7 +134,8 @@ class Sidebar(Container):
         self.update()
 
     def tap_nav_icon(self, e):
-        document_id = e.control.selected_index + 1
+        selected_index = e.control.selected_index
+        document_id = e.control.destinations[selected_index].data
         self.page.go(f"/documents/{document_id}")
 
     def open_modal(self, e):

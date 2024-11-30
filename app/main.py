@@ -15,11 +15,11 @@ def main(page: Page):
     page.scroll = ScrollMode.AUTO
     page.padding = 10
 
-
+    db = DatabaseHandler(load_settings())
     page.data = {
         "settings_file": "local.settings.json",
         "settings": load_settings,
-        "db": DatabaseHandler(load_settings()),
+        "db": db,
     }
 
     page.fonts = {
@@ -44,6 +44,7 @@ def main(page: Page):
     page.update()
 
     MyView(page)
+
 
 
 app(target=main, port=8000)

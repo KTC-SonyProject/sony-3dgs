@@ -24,6 +24,16 @@ def create_document_obj(content: str, document_id: int, return_list: bool = True
         return document
 
 
+def get_main_db() -> str:
+    """
+    メインDBを取得する関数
+    """
+    settings = load_settings()
+    if settings["use_postgres"]:
+        return "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
+    else:
+        return "sqlite:///indexing.db"
+
 
 def get_vector_store():
     """
@@ -46,7 +56,7 @@ def indexing_document(content: str, document_id: int):
     vector_store = get_vector_store()
     record_manager = SQLRecordManager(
         namespace="chromadb/document_collection",
-        db_url="sqlite:///indexing.db",
+        db_url=get_main_db(),
     )
     record_manager.create_schema()
     result = index(
@@ -73,7 +83,7 @@ def delete_document_from_vectorstore(document_id: int):
     vector_store = get_vector_store()
     record_manager = SQLRecordManager(
         namespace="chromadb/document_collection",
-        db_url="sqlite:///indexing.db",
+        db_url=get_main_db(),
     )
     result = index(
         docs,
@@ -100,7 +110,7 @@ def _clear_vectordb():
     vectorstore = get_vector_store()
     record_manager = SQLRecordManager(
         namespace="chromadb/document_collection",
-        db_url="sqlite:///indexing.db",
+        db_url=get_main_db(),
     )
     """Hacky helper method to clear content. See the `full` mode section to to understand why it works."""
     index([], record_manager, vectorstore, cleanup="full", source_id_key="source")
