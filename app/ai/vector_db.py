@@ -7,7 +7,6 @@ from app.db_conn import DatabaseHandler
 from app.settings import load_settings
 
 
-
 def create_document_obj(content: str, document_id: int, return_list: bool = True) -> Document | list[Document]:
     """
     ドキュメントオブジェクトを作成する関数

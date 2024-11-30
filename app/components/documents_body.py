@@ -31,7 +31,7 @@ from flet import (
     padding,
 )
 
-from app.ai.vector_db import indexing_document, delete_document_from_vectorstore
+from app.ai.vector_db import delete_document_from_vectorstore, indexing_document
 
 
 class RailDescription(Row):
