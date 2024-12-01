@@ -1,8 +1,11 @@
 import json
+import time
 
 from flet import (
+    alignment,
     Banner,
     Column,
+    Container,
     CrossAxisAlignment,
     Divider,
     ElevatedButton,
@@ -10,10 +13,260 @@ from flet import (
     NumbersOnlyInputFilter,
     Page,
     Switch,
+    Tab,
+    TabAlignment,
+    Tabs,
     Text,
     TextField,
     icons,
+    Dropdown,
+    dropdown,
+    Row,
 )
+
+
+class GeneralSettingsColumn(Column):
+    def __init__(self, page: Page, settings: dict):
+        super().__init__()
+        self.page = page
+        self.settings = settings
+        self.padding = 30
+
+        self.controls = [
+            Container(
+                padding=30,
+                alignment=alignment.center,
+                content=Text("General Settings", size=30),
+            ),
+            Divider(),
+            Container(
+                padding=30,
+                content=Column(
+                    spacing=20,
+                    controls=[
+                        TextField(
+                            label="App Title",
+                            value=settings.get("app_name", ""),
+                            on_change=lambda e: settings.update({"app_name": e.control.value}),
+                        ),
+                        TextField(
+                            label="App Description",
+                            value=settings.get("app_description", ""),
+                            on_change=lambda e: settings.update({"app_description": e.control.value}),
+                        ),
+                    ]
+                )
+            )
+        ]
+
+class DBSettingsColumn(Column):
+    def __init__(self, page: Page, settings: dict):
+        super().__init__()
+        self.page = page
+        self.settings = settings
+
+        self.controls = [
+            Container(
+                padding=30,
+                alignment=alignment.center,
+                content=Text("Database Settings", size=30),
+            ),
+            Divider(),
+            Container(
+                padding=30,
+                content=Column(
+                    spacing=50,
+                    controls=[
+                        Switch(
+                            label="Use PostgreSQL",
+                            value=settings.get("use_postgres", False),
+                            on_change=lambda e: self.on_change_use_postgres(e),
+                        ),
+                        Column(
+                            spacing=10,
+                            visible=settings.get("use_postgres", False),
+                            controls=[
+                                Text("PostgreSQL Settings", size=20),
+                                Divider(),
+                                TextField(
+                                    label="Host",
+                                    value=settings["postgres_settings"].get("host", ""),
+                                    on_change=lambda e: settings["postgres_settings"].update({"host": e.control.value}),
+                                ),
+                                TextField(
+                                    label="Port",
+                                    value=settings["postgres_settings"].get("port", ""),
+                                    on_change=lambda e: settings["postgres_settings"].update(
+                                        {"port": int(e.control.value)}
+                                    ),
+                                    input_filter=NumbersOnlyInputFilter(),
+                                ),
+                                TextField(
+                                    label="Database",
+                                    value=settings["postgres_settings"].get("database", ""),
+                                    on_change=lambda e: settings["postgres_settings"].update(
+                                        {"database": e.control.value}
+                                    ),
+                                ),
+                                TextField(
+                                    label="User",
+                                    value=settings["postgres_settings"].get("user", ""),
+                                    on_change=lambda e: settings["postgres_settings"].update({"user": e.control.value}),
+                                ),
+                                TextField(
+                                    label="Password",
+                                    value=settings["postgres_settings"].get("password", ""),
+                                    password=True,
+                                    can_reveal_password=True,
+                                    on_change=lambda e: settings["postgres_settings"].update(
+                                        {"password": e.control.value}
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ],
+                ),
+            ),
+        ]
+
+    def on_change_use_postgres(self, e):
+        """PostgreSQLの使用を切り替える"""
+        self.settings["use_postgres"] = e.control.value
+        # self.controls[3].visible = e.control.value
+        self.controls[2].content.controls[1].visible = e.control.value
+        self.page.update()
+
+
+class LLMSettingsColumn(Column):
+    def __init__(self, page: Page, settings: dict):
+        super().__init__()
+        self.page = page
+        self.settings = settings
+
+        self.controls = [
+            Container(
+                padding=30,
+                alignment=alignment.center,
+                content=Text("LLM Settings", size=30),
+            ),
+            Divider(),
+            Container(
+                padding=30,
+                content=Column(
+                    spacing=50,
+                    controls=[
+                        Dropdown(
+                            label="LLM Provider",
+                            value=settings.get("llm_provider", "azure"),
+                            options=[
+                                dropdown.Option("azure"),
+                                dropdown.Option("gemini"),
+                                dropdown.Option("ollama"),
+                            ],
+                            on_change=self.on_change_llm_provider,
+                        ),
+                        Column(
+                            spacing=10,
+                            data="azure",
+                            visible=settings.get("llm_provider", "azure") == "azure",
+                            controls=[
+                                Text("Azure LLM Settings", size=20),
+                                Divider(),
+                                TextField(
+                                    label="Endpoint",
+                                    value=settings.get("azure_llm_settings", {}).get("endpoint", ""),
+                                    on_change=lambda e: settings["azure_llm_settings"].update(
+                                        {"endpoint": e.control.value}
+                                    ),
+                                ),
+                                TextField(
+                                    label="API Key",
+                                    value=settings.get("azure_llm_settings", {}).get("api_key", ""),
+                                    password=True,
+                                    can_reveal_password=True,
+                                    on_change=lambda e: settings["azure_llm_settings"].update(
+                                        {"api_key": e.control.value}
+                                    ),
+                                ),
+                                TextField(
+                                    label="Deployment Name",
+                                    value=settings.get("azure_llm_settings", {}).get("deployment_name", ""),
+                                    on_change=lambda e: settings["azure_llm_settings"].update(
+                                        {"deployment_name": e.control.value}
+                                    ),
+                                ),
+                                TextField(
+                                    label="Deployment Name (Embeddings)",
+                                    value=settings.get("azure_llm_settings", {}).get("deployment_embdding_name", ""),
+                                    on_change=lambda e: settings["azure_llm_settings"].update(
+                                        {"deployment_embdding_name": e.control.value}
+                                    ),
+                                ),
+                                TextField(
+                                    label="API Version",
+                                    value=settings.get("azure_llm_settings", {}).get("api_version", ""),
+                                    on_change=lambda e: settings["azure_llm_settings"].update(
+                                        {"api_version": e.control.value}
+                                    )
+                                ),
+                            ]
+                        ),
+                        Column(
+                            spacing=10,
+                            data="gemini",
+                            visible=settings.get("llm_provider", "azure") == "gemini",
+                            controls=[
+                                Container(
+                                    padding=30,
+                                    alignment=alignment.center,
+                                    content=Text("Geminiはまだ実装されていません。", size=20, color="yellow"),
+                                )
+                            ]
+                        ),
+                        Column(
+                            spacing=10,
+                            data="ollama",
+                            visible=settings.get("llm_provider", "azure") == "ollama",
+                            controls=[
+                                Container(
+                                    padding=30,
+                                    alignment=alignment.center,
+                                    content=Text("Ollamaはまだ実装されていません。", size=20, color="yellow"),
+                                )
+                            ]
+                        ),
+                    ]
+                ),
+            ),
+        ]
+
+    def on_change_llm_provider(self, e):
+        """LLMプロバイダーを切り替える"""
+        self.settings["llm_provider"] = e.control.value
+        for control in self.controls[2].content.controls[1:]:
+            control.visible = control.data == e.control.value
+        self.page.update()
+
+
+
+
+class TabBody(Tab):
+    def __init__(self, page: Page, title: str, settings: dict):
+        super().__init__()
+        self.page = page
+        self.settings = settings
+        self.text = title
+
+        if title == "General":
+            self.content = GeneralSettingsColumn(self.page, self.settings)
+        elif title == "Database":
+            self.content = DBSettingsColumn(self.page, self.settings)
+        elif title == "LLM":
+            self.content = LLMSettingsColumn(self.page, self.settings)
+        else:
+            self.content = Text("No settings available for this tab")
+
+
 
 
 class SettingsBody(Column):
@@ -28,59 +281,30 @@ class SettingsBody(Column):
         self.settings_file = self.page.data["settings_file"]
         self.settings = self.page.data["settings"]()
 
-
-
-        # レイアウト
         self.controls = [
-            Text("Settings", size=24, weight="bold"),
-            Divider(),
-            Text("Database Settings", size=18),
-            Switch(
-                label="Use PostgreSQL",
-                value=self.settings.get("use_postgres", False),
-                on_change=lambda e: self.on_change_use_postgres(e),
+            Container(
+                padding=30,
+                alignment=alignment.center,
+                content=Row(
+                    spacing=20,
+                    controls=[
+                        Text("Settings", size=30),
+                        ElevatedButton("Save Settings", on_click=self.save_settings),
+                    ]
+                ),
             ),
-            Column(
-                visible=self.settings.get("use_postgres", False),
-                controls=[
-                    TextField(
-                        label="Host",
-                        value=self.settings["postgres_config"].get("host", ""),
-                        on_change=lambda e: self.settings["postgres_config"].update({"host": e.control.value}),
-                    ),
-                    TextField(
-                        label="Port",
-                        value=self.settings["postgres_config"].get("port", ""),
-                        on_change=lambda e: self.settings["postgres_config"].update({"port": int(e.control.value)}),
-                        input_filter=NumbersOnlyInputFilter(),
-                    ),
-                    TextField(
-                        label="Database",
-                        value=self.settings["postgres_config"].get("database", ""),
-                        on_change=lambda e: self.settings["postgres_config"].update({"database": e.control.value}),
-                    ),
-                    TextField(
-                        label="User",
-                        value=self.settings["postgres_config"].get("user", ""),
-                        on_change=lambda e: self.settings["postgres_config"].update({"user": e.control.value}),
-                    ),
-                    TextField(
-                        label="Password",
-                        value=self.settings["postgres_config"].get("password", ""),
-                        on_change=lambda e: self.settings["postgres_config"].update({"password": e.control.value}),
-                    ),
-                ],
+            Tabs(
+                selected_index=0,
+                animation_duration=300,
+                tab_alignment=TabAlignment.CENTER,
+                tabs=[
+                    TabBody(self.page, "General", self.settings["general_settings"]),
+                    TabBody(self.page, "Database", self.settings["db_settings"]),
+                    TabBody(self.page, "LLM", self.settings["llm_settings"]),
+                ]
             ),
-            Divider(),
-            ElevatedButton("Save Settings", on_click=self.save_settings),
         ]
 
-
-    def on_change_use_postgres(self, e):
-        """PostgreSQLの使用を切り替える"""
-        self.settings["use_postgres"] = e.control.value
-        self.controls[4].visible = e.control.value
-        self.page.update()
 
     def save_settings(self, e):
         """設定をファイルに保存する"""
@@ -110,4 +334,6 @@ class SettingsBody(Column):
         e.control.page.overlay.append(self.banner_message(status))
         self.banner.open = True
         e.control.page.update()
+        time.sleep(3)
+        self.close_banner(e)
 

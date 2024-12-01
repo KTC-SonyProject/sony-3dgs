@@ -23,8 +23,8 @@ class MyLayout(View):
         self.page = page
         self.route = route
         self.scroll = None
-        self.vertical_alignment = MainAxisAlignment.CENTER
-        self.horizontal_alignment = CrossAxisAlignment.CENTER
+        # self.vertical_alignment = MainAxisAlignment.CENTER
+        # self.horizontal_alignment = CrossAxisAlignment.CENTER
 
         # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
         if self.route == '/':

@@ -19,8 +19,8 @@ class DatabaseHandler:
         :param settings: 設定辞書 (PostgreSQL/SQLite両対応)
         :param use_connection_kwargs: PostgreSQLで接続パラメータを追加するか
         """
-        self.settings = settings
-        self.use_postgres = settings.get("use_postgres", False)
+        self.settings = settings["db_settings"]
+        self.use_postgres = self.settings.get("use_postgres", False)
 
         if self.use_postgres:
             self._init_postgres()
@@ -29,24 +29,24 @@ class DatabaseHandler:
 
     def _init_postgres(self):
         """PostgreSQLデータベースに接続するための初期化を行う"""
-        postgres_config = self.settings.get("postgres_config")
-        db_uri = f"postgresql://{postgres_config['user']}:{postgres_config['password']}@{postgres_config['host']}:{postgres_config['port']}/{postgres_config['database']}?sslmode=disable"
+        postgres_settings = self.settings.get("postgres_settings")
+        db_uri = f"postgresql://{postgres_settings['user']}:{postgres_settings['password']}@{postgres_settings['host']}:{postgres_settings['port']}/{postgres_settings['database']}?sslmode=disable"
         self.pool = ConnectionPool(conninfo=db_uri, max_size=20, open=True)
         logging.info("PostgreSQL connection pool is initialized.")
 
     def _init_sqlite(self):
         """SQLiteデータベースに接続するための初期化を行う"""
-        sqlite_config = self.settings.get("sqlite_config")
+        sqlite_settings = self.settings.get("sqlite_settings")
         # sqliteのファイルが存在しない場合は作成
-        if not Path(sqlite_config["database"]).exists():
-            Path(sqlite_config["database"]).touch()
+        if not Path(sqlite_settings["database"]).exists():
+            Path(sqlite_settings["database"]).touch()
             # init_sqlファイルを使用してテーブルを作成
-            with sqlite3.connect(sqlite_config["database"]) as connection:
+            with sqlite3.connect(sqlite_settings["database"]) as connection:
                 with open("db/sqlite/init/1_init.sql") as f:
                     connection.executescript(f.read())
             logging.info("SQLite database is created.")
 
-        self.connection = sqlite3.connect(sqlite_config["database"], check_same_thread=False)
+        self.connection = sqlite3.connect(sqlite_settings["database"], check_same_thread=False)
         logging.info("SQLite connection is initialized.")
 
     def execute_query(self, query, params=None):

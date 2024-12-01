@@ -25,10 +25,16 @@ class State(TypedDict):
 class ChatbotGraph:
     def __init__(self, llm_type: str = "AzureChatOpenAI", verbose: bool = False):
         self.graph_builder = StateGraph(State)
-        self.llm = llm_settings(verbose=verbose)
-        self.llm_with_tools = self.llm.bind_tools(tools)
-        self._initialize_memory()
-        self._initialize_graph()
+        try:
+            self.llm = llm_settings(verbose=verbose)
+            self.llm_with_tools = self.llm.bind_tools(tools)
+            self._initialize_memory()
+            self._initialize_graph()
+        except ValueError as e:
+            print(e)
+            raise ValueError("AIの初期化に失敗しました。\nLLMとDatabaseの設定を見直してください。") from e
+        except Exception as e:
+            raise e
 
     def _initialize_graph(self) -> None:
         self.graph_builder.add_node("chatbot", self.chatbot)
@@ -44,7 +50,7 @@ class ChatbotGraph:
         self.graph = self.graph_builder.compile(checkpointer=self.memory)
 
     def _initialize_memory(self) -> None:
-        settings = load_settings()
+        settings = load_settings("db_settings")
         if settings["use_postgres"]:
             self.DB_URI = "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
             self.connection_kwargs = {"autocommit": True, "prepare_threshold": 0}
@@ -74,10 +80,12 @@ class ChatbotGraph:
         if config is None:
             self.set_memory_config("1")
 
-        events = self.graph.stream({"messages": [("user", user_input)]}, self.memory_config, stream_mode="values")
-
-        for event in events:
-            yield event["messages"][-1]
+        try:
+            events = self.graph.stream({"messages": [("user", user_input)]}, self.memory_config, stream_mode="values")
+            for event in events:
+                yield event["messages"][-1]
+        except Exception as e:
+            raise ValueError("ストリーム更新に失敗しました。") from e
 
 
 

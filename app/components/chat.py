@@ -125,7 +125,14 @@ class ChatBody(Column):
     def __init__(self, page: Page, session_id: str = "1"):
         super().__init__()
         self.page = page
-        self._initialize_chatbot(session_id)
+        try:
+            self._initialize_chatbot(session_id)
+        except ValueError as e:
+            self.controls = [Container(
+                content=Text(str(e), color=colors.RED),
+                padding=padding.all(20),
+            )]
+            return
         self.chat = ListView(expand=True, spacing=50, auto_scroll=True)
         self.new_message = TextField(
             hint_text="Write a message...",
@@ -211,25 +218,40 @@ class ChatBody(Column):
             self.page.update()
             tool_used = False
 
-            for response in self.chatbot_graph.stream_graph_updates(send_message):
-                print(response)
-                # もしresponseのadditional_kwargs{}が'tool_calls'を持っていたら、それを表示する
-                if "tool_calls" in response.additional_kwargs:
-                    tool_used = True
-                elif tool_used and "results" in response.content:
-                    tool_results = response.content
-                    urls = [f"- [{result['title']}]({result['url']})" for result in tool_results]
-                    urls_message = "\n".join(urls)
-                    self.on_message(
-                        Message(
-                            user_name="AI", text=f"ツールを使用して取得した情報です:\n{urls_message}", message_type="ai"
+            try:
+                for response in self.chatbot_graph.stream_graph_updates(send_message):
+                    print(response)
+                    # もしresponseのadditional_kwargs{}が'tool_calls'を持っていたら、それを表示する
+                    if "tool_calls" in response.additional_kwargs:
+                        tool_used = True
+                    elif tool_used and "results" in response.content:
+                        tool_results = response.content
+                        urls = [f"- [{result['title']}]({result['url']})" for result in tool_results]
+                        urls_message = "\n".join(urls)
+                        self.on_message(
+                            Message(
+                                user_name="AI",
+                                text=f"ツールを使用して取得した情報です:\n{urls_message}",
+                                message_type="ai"
+                            )
                         )
-                    )
-                    tool_used = False
-                else:
-                    sender = "user" if "HumanMessage" in str(type(response)) else "AI"
-                    message_type = "human" if "HumanMessage" in str(type(response)) else "ai"
-                    self.on_message(Message(user_name=sender, text=response.content, message_type=message_type))
+                        tool_used = False
+                    else:
+                        sender = "user" if "HumanMessage" in str(type(response)) else "AI"
+                        message_type = "human" if "HumanMessage" in str(type(response)) else "ai"
+                        self.on_message(Message(user_name=sender, text=response.content, message_type=message_type))
+            except Exception as error:
+                print(error)
+                sender = "AI"
+                message_type = "ai"
+                error_message = """
+# エラーが発生しました。
+
+再度時間をおいてお試しください。
+
+もしエラーが続く場合は、LLMの設定を確認してください。
+"""
+                self.on_message(Message(user_name=sender, text=error_message, message_type=message_type))
 
             self.progress.visible = False
             self.new_message.focus()
