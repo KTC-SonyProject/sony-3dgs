@@ -27,7 +27,7 @@ def get_main_db() -> str:
     """
     メインDBを取得する関数
     """
-    settings = load_settings()
+    settings = load_settings("db_settings")
     if settings["use_postgres"]:
         return "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
     else:

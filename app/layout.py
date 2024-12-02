@@ -1,6 +1,4 @@
 from flet import (
-    CrossAxisAlignment,
-    MainAxisAlignment,
     Page,
     ScrollMode,
     TemplateRoute,
@@ -22,6 +20,7 @@ class MyLayout(View):
         super().__init__()
         self.page = page
         self.route = route
+        self.expand = True
         self.scroll = None
         # self.vertical_alignment = MainAxisAlignment.CENTER
         # self.horizontal_alignment = CrossAxisAlignment.CENTER

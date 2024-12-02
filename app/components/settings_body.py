@@ -2,27 +2,31 @@ import json
 import time
 
 from flet import (
-    alignment,
     Banner,
     Column,
     Container,
     CrossAxisAlignment,
     Divider,
+    Dropdown,
     ElevatedButton,
     IconButton,
     NumbersOnlyInputFilter,
     Page,
+    Row,
+    ScrollMode,
     Switch,
     Tab,
     TabAlignment,
     Tabs,
     Text,
     TextField,
-    icons,
-    Dropdown,
+    alignment,
     dropdown,
-    Row,
+    icons,
 )
+
+from app.db_conn import DatabaseHandler
+from app.settings import load_settings
 
 
 class GeneralSettingsColumn(Column):
@@ -30,17 +34,16 @@ class GeneralSettingsColumn(Column):
         super().__init__()
         self.page = page
         self.settings = settings
-        self.padding = 30
+        self.expand=True
 
         self.controls = [
             Container(
-                padding=30,
+                padding=10,
                 alignment=alignment.center,
                 content=Text("General Settings", size=30),
             ),
             Divider(),
             Container(
-                padding=30,
                 content=Column(
                     spacing=20,
                     controls=[
@@ -64,18 +67,18 @@ class DBSettingsColumn(Column):
         super().__init__()
         self.page = page
         self.settings = settings
+        self.expand=True
 
         self.controls = [
             Container(
-                padding=30,
+                padding=10,
                 alignment=alignment.center,
                 content=Text("Database Settings", size=30),
             ),
             Divider(),
             Container(
-                padding=30,
                 content=Column(
-                    spacing=50,
+                    spacing=20,
                     controls=[
                         Switch(
                             label="Use PostgreSQL",
@@ -142,17 +145,22 @@ class LLMSettingsColumn(Column):
         super().__init__()
         self.page = page
         self.settings = settings
+        # self.page.scroll = True
+        self.expand = True
+        # self.page.scroll = ScrollMode.ALWAYS
 
         self.controls = [
             Container(
-                padding=30,
+                padding=10,
                 alignment=alignment.center,
                 content=Text("LLM Settings", size=30),
             ),
             Divider(),
             Container(
-                padding=30,
+                expand=True,
                 content=Column(
+                    expand=True,
+                    scroll=ScrollMode.HIDDEN,
                     spacing=50,
                     controls=[
                         Dropdown(
@@ -256,6 +264,7 @@ class TabBody(Tab):
         self.page = page
         self.settings = settings
         self.text = title
+        self.expand=True
 
         if title == "General":
             self.content = GeneralSettingsColumn(self.page, self.settings)
@@ -274,6 +283,7 @@ class SettingsBody(Column):
         super().__init__()
         self.page = page
         self.spacing = 10
+        self.expand=True
         # self.alignment = MainAxisAlignment.START
         self.horizontal_alignment = CrossAxisAlignment.START
 
@@ -283,7 +293,7 @@ class SettingsBody(Column):
 
         self.controls = [
             Container(
-                padding=30,
+                padding=10,
                 alignment=alignment.center,
                 content=Row(
                     spacing=20,
@@ -294,6 +304,7 @@ class SettingsBody(Column):
                 ),
             ),
             Tabs(
+                expand=True,
                 selected_index=0,
                 animation_duration=300,
                 tab_alignment=TabAlignment.CENTER,
@@ -311,6 +322,7 @@ class SettingsBody(Column):
         try:
             with open(self.settings_file, "w") as f:
                 json.dump(self.settings, f, indent=4)
+            self.page.data["db"] = DatabaseHandler(load_settings())
             self.show_banner(e, "success")
         except Exception:
             self.show_banner(e, "error")
