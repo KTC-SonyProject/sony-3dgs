@@ -26,6 +26,7 @@ from flet import (
 )
 
 from app.db_conn import DatabaseHandler
+from app.ai.settings import langsmith_settigns
 from app.settings import load_settings
 
 
@@ -215,9 +216,9 @@ class LLMSettingsColumn(Column):
                                     value=settings.get("azure_llm_settings", {}).get("api_version", ""),
                                     on_change=lambda e: settings["azure_llm_settings"].update(
                                         {"api_version": e.control.value}
-                                    )
+                                    ),
                                 ),
-                            ]
+                            ],
                         ),
                         Column(
                             spacing=10,
@@ -229,7 +230,7 @@ class LLMSettingsColumn(Column):
                                     alignment=alignment.center,
                                     content=Text("Geminiはまだ実装されていません。", size=20, color="yellow"),
                                 )
-                            ]
+                            ],
                         ),
                         Column(
                             spacing=10,
@@ -241,9 +242,49 @@ class LLMSettingsColumn(Column):
                                     alignment=alignment.center,
                                     content=Text("Ollamaはまだ実装されていません。", size=20, color="yellow"),
                                 )
-                            ]
+                            ],
                         ),
-                    ]
+                        Column(
+                            spacing=10,
+                            controls=[
+                                Text(
+                                    "Options",
+                                    size=20,
+                                ),
+                                Divider(),
+                                Text(
+                                    "Chat履歴を効率的に管理するためにLangSmithを導入できます。",
+                                    size=15,
+                                ),
+                                Switch(
+                                    label="Use LangSmith",
+                                    value=settings.get("use_langsmith", False),
+                                    on_change=self.on_change_use_langsmith,
+                                ),
+                                Column(
+                                    visible=settings.get("use_langsmith", False),
+                                    controls=[
+                                        TextField(
+                                            label="project name",
+                                            value=settings.get("langsmith_settings", {}).get("project_name", ""),
+                                            on_change=lambda e: settings["langsmith_settings"].update(
+                                                "project_name", e.control.value
+                                            ),
+                                        ),
+                                        TextField(
+                                            label="LangSmith API Key",
+                                            value=settings.get("langsmith_settings", {}).get("api_key", ""),
+                                            password=True,
+                                            can_reveal_password=True,
+                                            on_change=lambda e: settings["langsmith_settings"].update(
+                                                "api_key", e.control.value
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    ],
                 ),
             ),
         ]
@@ -253,6 +294,12 @@ class LLMSettingsColumn(Column):
         self.settings["llm_provider"] = e.control.value
         for control in self.controls[2].content.controls[1:]:
             control.visible = control.data == e.control.value
+        self.page.update()
+
+    def on_change_use_langsmith(self, e):
+        """LangSmithの使用を切り替える"""
+        self.settings["use_langsmith"] = e.control.value
+        self.controls[2].content.controls[4].controls[4].visible = e.control.value
         self.page.update()
 
 
@@ -323,6 +370,7 @@ class SettingsBody(Column):
             with open(self.settings_file, "w") as f:
                 json.dump(self.settings, f, indent=4)
             self.page.data["db"] = DatabaseHandler(load_settings())
+            langsmith_settigns()
             self.show_banner(e, "success")
         except Exception:
             self.show_banner(e, "error")

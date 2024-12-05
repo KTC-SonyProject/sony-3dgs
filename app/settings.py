@@ -28,6 +28,12 @@ DEFAULT_SETTINGS = {
             "deployment_embdding_name": "",
             "api_version": "",
         },
+        "use_langsmith": False,
+        "langsmith_settings": {
+            "endpoint": "",
+            "project_name": "",
+            "api_key": "",
+        },
     },
 }
 

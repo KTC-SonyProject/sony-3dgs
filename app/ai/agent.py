@@ -13,7 +13,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from psycopg_pool import ConnectionPool
 from typing_extensions import TypedDict
 
-from app.ai.settings import llm_settings
+from app.ai.settings import llm_settings, langsmith_settigns
 from app.ai.tools import tools
 from app.settings import load_settings
 
@@ -25,6 +25,7 @@ class State(TypedDict):
 class ChatbotGraph:
     def __init__(self, llm_type: str = "AzureChatOpenAI", verbose: bool = False):
         self.graph_builder = StateGraph(State)
+        langsmith_settigns()
         try:
             self.llm = llm_settings(verbose=verbose)
             self.llm_with_tools = self.llm.bind_tools(tools)

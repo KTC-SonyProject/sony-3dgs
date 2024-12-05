@@ -50,6 +50,18 @@ def embedding_model_settings():
     else:
         raise ValueError(f"Invalid embedding model type: {settings.get("embedding_provider")}")
 
+def langsmith_settigns():
+    settings = load_settings("llm_settings")
+    if settings.get("use_langsmith"):
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_ENDPOINT"] = settings["langsmith_settings"].get("endpoint")
+        os.environ["LANGCHAIN_PROJECT"] = settings["langsmith_settings"].get("project_name", "spadge-project")
+        os.environ["LANGCHAIN_API_KEY"] = settings["langsmith_settings"].get("api_key")
+        print("Langsmith is setting.")
+        print(f"{os.environ['LANGCHAIN_TRACING_V2']=}, {os.environ['LANGCHAIN_ENDPOINT']=}, {os.environ['LANGCHAIN_PROJECT']=}, {os.environ['LANGCHAIN_API_KEY']=}")
+    else:
+        os.environ["LANGCHAIN_TRACING_V2"] = "false"
+        print("Langsmith is not setting.")
 
 if __name__ == "__main__":
     llm = llm_settings(verbose=True)
