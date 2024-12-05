@@ -1,3 +1,4 @@
+
 from flet import (
     AlertDialog,
     ButtonStyle,
@@ -21,6 +22,7 @@ from flet import (
     Text,
     TextButton,
     TextField,
+    TextOverflow,
     VerticalDivider,
     alignment,
     border_radius,
@@ -29,7 +31,7 @@ from flet import (
     padding,
 )
 
-from app.db_conn import DatabaseHandler
+from app.ai.vector_db import delete_document_from_vectorstore, indexing_document
 
 
 class RailDescription(Row):
@@ -38,9 +40,11 @@ class RailDescription(Row):
         self.page = page
         self.title = title
         self.id = id
+        # self.expand = True
+        self.alignment = MainAxisAlignment.SPACE_BETWEEN
 
         self.controls = [
-            Text(self.title),
+            Text(self.title, width=150, max_lines=1, overflow=TextOverflow.ELLIPSIS),
             IconButton(icon=icons.EDIT_NOTE, tooltip="Edit Documents", on_click=self.click),
         ]
 
@@ -53,7 +57,7 @@ class Sidebar(Container):
     def __init__(self, page:Page, documents_list: list):
         super().__init__()
         self.page = page
-        self.db = DatabaseHandler(self.page.data["settings"]())
+        self.db = self.page.data["db"]
 
         self.nav_rail_visible = True
         self.nav_rail_items = []
@@ -64,8 +68,9 @@ class Sidebar(Container):
                     label=document[1],
                     selected_icon=icons.CHEVRON_RIGHT_ROUNDED,
                     icon=icons.CHEVRON_RIGHT_OUTLINED,
-                    )
+                    data=document[0],
                 )
+            )
 
         self.nav_rail = NavigationRail(
             selected_index=None,
@@ -129,7 +134,8 @@ class Sidebar(Container):
         self.update()
 
     def tap_nav_icon(self, e):
-        document_id = e.control.selected_index + 1
+        selected_index = e.control.selected_index
+        document_id = e.control.destinations[selected_index].data
         self.page.go(f"/documents/{document_id}")
 
     def open_modal(self, e):
@@ -141,14 +147,12 @@ class Sidebar(Container):
         try:
             if self.dlg_modal.content.value == "":
                 raise Exception("タイトル名が入力されていません")
-            self.db.connect()
             self.db.execute_query(
                 "INSERT INTO documents (title, content) VALUES (%s, %s)",
                 (self.dlg_modal.content.value, "")
             )
             result = self.db.fetch_query("SELECT document_id FROM documents ORDER BY created_at DESC LIMIT 1;")
             print(result)
-            self.db.close_connection()
             self.dlg_modal.open = False
             self.page.go(f"/documents/{result[0][0]}/edit")
         except Exception as error:
@@ -161,6 +165,9 @@ class Sidebar(Container):
         self.dlg_modal.open = False
         e.control.page.update()
         print("No clicked")
+
+    def click(self, e, id):
+        self.page.go(f"/documents/{id}/edit")
 
 
 class DocumentBody(Container):
@@ -195,7 +202,7 @@ class DocumentsBody(Row):
 
 
         self.settings = self.page.data["settings"]()
-        self.db = DatabaseHandler(self.settings)
+        self.db = self.page.data["db"]
 
         self.documents_list = self.get_document_list()
 
@@ -213,15 +220,11 @@ class DocumentsBody(Row):
             ]
 
     def get_document_body(self, document_id: int):
-        self.db.connect()
         result = self.db.fetch_query("SELECT * FROM documents WHERE document_id = %s", (document_id,))
-        self.db.close_connection()
         return result[0] if result != [] else None
 
     def get_document_list(self):
-        self.db.connect()
         result = self.db.fetch_query("SELECT document_id, title FROM documents ORDER BY document_id ASC;")
-        self.db.close_connection()
         return result
 
 
@@ -235,7 +238,7 @@ class EditBody(Row):
         self.expand = True
 
         self.settings = self.page.data["settings"]()
-        self.db = DatabaseHandler(self.settings)
+        self.db = self.page.data["db"]
 
         self.document = self.get_document_body(document_id)
 
@@ -256,9 +259,7 @@ class EditBody(Row):
         ]
 
     def get_document_body(self, document_id: int):
-        self.db.connect()
         result = self.db.fetch_query("SELECT * FROM documents WHERE document_id = %s", (document_id,))
-        self.db.close_connection()
         return result[0] if result != [] else None
 
     def update_preview(self, e):
@@ -294,7 +295,7 @@ class EditDocumentBody(Column):
             actions_alignment=MainAxisAlignment.CENTER,
         )
 
-        self.db = DatabaseHandler(self.page.data["settings"]())
+        self.db = self.page.data["db"]
 
         self.document_id = document_id
         self.document_title = self.get_document_title()
@@ -325,35 +326,36 @@ class EditDocumentBody(Column):
         ]
 
     def get_document_title(self):
-        self.db.connect()
         result = self.db.fetch_query("SELECT title FROM documents WHERE document_id = %s", (self.document_id,))
-        self.db.close_connection()
         return result[0][0]
 
     def back_page(self, e):
         self.page.go(f"/documents/{self.document_id}")
 
     def save_document(self, e):
-        self.db.connect()
-        if self.document_title != self.controls[0].controls[0].controls[1].value:
-            self.db.execute_query(
-                "UPDATE documents SET title = %s WHERE document_id = %s",
-                (self.controls[0].controls[0].controls[1].value, self.document_id)
-            )
+        # if self.document_title != self.controls[0].controls[0].controls[1].value:
+        #     self.db.execute_query(
+        #         "UPDATE documents SET title = %s WHERE document_id = %s",
+        #         (self.controls[0].controls[0].controls[1].value, self.document_id)
+        #     )
         self.db.execute_query(
-            "UPDATE documents SET content = %s WHERE document_id = %s",
-            (self.controls[2].text_field.value, self.document_id)
+            "UPDATE documents SET title = %s, content = %s WHERE document_id = %s",
+            (
+                self.controls[0].controls[0].controls[1].value,
+                self.controls[2].text_field.value,
+                self.document_id
+            )
         )
-        self.db.close_connection()
+        indexing_document(self.controls[2].text_field.value, self.document_id)
+
         self.page.go(f"/documents/{self.document_id}")
 
     def delete_document(self, e):
-        self.db.connect()
         self.db.execute_query(
             "DELETE FROM documents WHERE document_id = %s",
             (self.document_id,)
         )
-        self.db.close_connection()
+        delete_document_from_vectorstore(self.document_id)
         self.page.go("/documents")
 
     def open_modal(self, e):
