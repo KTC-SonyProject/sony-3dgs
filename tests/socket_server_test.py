@@ -1,6 +1,10 @@
-from app.unity_conn import start_server
+from threading import Thread
 
-server = start_server()
+from app.unity_conn import SocketServer
+
+server = SocketServer()
+server_thread = Thread(target=server.start, daemon=True)
+server_thread.start()
 
 try:
     while True:

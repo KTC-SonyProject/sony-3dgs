@@ -1,6 +1,5 @@
 import os
 import socket
-import threading
 
 
 class SocketServer:
@@ -113,9 +112,3 @@ class SocketServer:
                 print(f"ファイルを送信しました: {file_path}")
             except Exception as e:
                 raise e
-
-def start_server():
-    server = SocketServer()
-    server_thread = threading.Thread(target=server.start)
-    server_thread.start()
-    return server
