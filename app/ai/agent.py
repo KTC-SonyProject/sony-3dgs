@@ -97,8 +97,15 @@ class ChatbotGraph:
 
 if __name__ == "__main__":
     import pprint
+    from threading import Thread
 
-    chatbot_graph = ChatbotGraph(verbose=True)
+    from app.unity_conn import SocketServer
+
+    server = SocketServer()
+    server_thread = Thread(target=server.start, daemon=True)
+    server_thread.start()
+
+    chatbot_graph = ChatbotGraph(verbose=True, server=server)
 
     chatbot_graph.draw_graph()
 
