@@ -9,7 +9,7 @@ from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from app.ai.vector_db import get_vector_store
-from app.unity_conn import SocketServer, start_server
+from app.unity_conn import SocketServer
 
 
 class SearchDocumentInput(BaseModel):
@@ -110,7 +110,8 @@ tools = [search_documents_tool]
 if __name__ == "__main__":
     print(f"{search_documents_tool.name=}, {search_documents_tool.description=}, {search_documents_tool.args=}")
 
-    display_operation_tool = DisplayOperationTool(server=start_server())
+    server=SocketServer()
+    display_operation_tool = DisplayOperationTool(server=server.start())
     print(f"{display_operation_tool.name=}, {display_operation_tool.description=}, {display_operation_tool.args=}")
 
 
