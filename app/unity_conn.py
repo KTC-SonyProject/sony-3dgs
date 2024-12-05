@@ -12,7 +12,7 @@ class SocketServer:
         self.server_socket = None
         self.client_socket = None
         self.client_address = None
-        self.running = True
+        self.running = False
 
     def start(self) -> None:
         """
@@ -22,6 +22,7 @@ class SocketServer:
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(1)
         print(f"サーバーが起動しました: {self.host}:{self.port}")
+        self.running = True
 
         try:
             while self.running:
