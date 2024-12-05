@@ -13,8 +13,8 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from psycopg_pool import ConnectionPool
 from typing_extensions import TypedDict
 
-from app.ai.settings import llm_settings, langsmith_settigns
-from app.ai.tools import tools, DisplayOperationTool
+from app.ai.settings import langsmith_settigns, llm_settings
+from app.ai.tools import DisplayOperationTool, tools
 from app.settings import load_settings
 from app.unity_conn import SocketServer
 

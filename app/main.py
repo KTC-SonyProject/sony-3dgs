@@ -9,8 +9,8 @@ from flet import (
 
 from app.db_conn import DatabaseHandler
 from app.settings import load_settings
-from app.views import MyView
 from app.unity_conn import SocketServer
+from app.views import MyView
 
 
 def main(page: Page):

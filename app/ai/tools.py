@@ -5,7 +5,7 @@ from langchain_core.callbacks import (
     CallbackManagerForToolRun,
 )
 from langchain_core.documents import Document
-from langchain_core.tools import tool, BaseTool
+from langchain_core.tools import BaseTool, tool
 from pydantic import BaseModel, Field
 
 from app.ai.vector_db import get_vector_store
