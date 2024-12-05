@@ -1,3 +1,5 @@
+import threading
+
 import flet as ft
 from flet import (
     Page,
@@ -8,6 +10,7 @@ from flet import (
 from app.db_conn import DatabaseHandler
 from app.settings import load_settings
 from app.views import MyView
+from app.unity_conn import SocketServer
 
 
 def main(page: Page):
@@ -15,11 +18,15 @@ def main(page: Page):
     page.scroll = ScrollMode.AUTO
     page.padding = 10
 
+    server = SocketServer()
+    server_thread = threading.Thread(target=server.start, daemon=True)
+    server_thread.start()
     db = DatabaseHandler(load_settings())
     page.data = {
         "settings_file": "local.settings.json",
         "settings": load_settings,
         "db": db,
+        "server": server,
     }
 
     page.fonts = {
@@ -45,6 +52,13 @@ def main(page: Page):
 
     MyView(page)
 
+    def on_close():
+        server.stop()
+        db.close()
+        server_thread.join()
+        print("Application closed")
+
+    page.on_close = on_close
 
 
 app(target=main, port=8000)

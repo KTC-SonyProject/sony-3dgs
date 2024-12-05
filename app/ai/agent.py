@@ -14,8 +14,9 @@ from psycopg_pool import ConnectionPool
 from typing_extensions import TypedDict
 
 from app.ai.settings import llm_settings, langsmith_settigns
-from app.ai.tools import tools
+from app.ai.tools import tools, DisplayOperationTool
 from app.settings import load_settings
+from app.unity_conn import SocketServer
 
 
 class State(TypedDict):
@@ -23,12 +24,14 @@ class State(TypedDict):
 
 
 class ChatbotGraph:
-    def __init__(self, llm_type: str = "AzureChatOpenAI", verbose: bool = False):
+    def __init__(self, server: SocketServer, verbose: bool = False):
         self.graph_builder = StateGraph(State)
         langsmith_settigns()
         try:
             self.llm = llm_settings(verbose=verbose)
-            self.llm_with_tools = self.llm.bind_tools(tools)
+            self.tools = tools
+            self.tools.append(DisplayOperationTool(server=server))
+            self.llm_with_tools = self.llm.bind_tools(self.tools)
             self._initialize_memory()
             self._initialize_graph()
         except ValueError as e:
