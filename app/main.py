@@ -1,4 +1,5 @@
 import threading
+import logging
 
 import flet as ft
 from flet import (
@@ -11,6 +12,7 @@ from app.db_conn import DatabaseHandler
 from app.settings import load_settings
 from app.unity_conn import SocketServer
 from app.views import MyView
+from app.logging_config import setup_logging
 
 
 def main(page: Page):
@@ -60,5 +62,7 @@ def main(page: Page):
 
     page.on_close = on_close
 
-
+setup_logging()
+logger = logging.getLogger(__name__)
+logger.info("app started")
 app(target=main, port=8000)
