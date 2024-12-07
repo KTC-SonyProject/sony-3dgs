@@ -1,6 +1,8 @@
+import logging
 import os
 import socket
 
+logger = logging.getLogger(__name__)
 
 class SocketServer:
     """
@@ -21,19 +23,19 @@ class SocketServer:
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(1)
-        print(f"サーバーが起動しました: {self.host}:{self.port}")
+        logger.info(f"サーバーが起動しました: {self.host}:{self.port}")
         self.running = True
 
         try:
             while self.running:
-                print("クライアントの接続を待機中...")
+                logger.info("クライアントの接続を待機中...")
                 self.client_socket, self.client_address = self.server_socket.accept()
-                print(f"クライアントが接続しました: {self.client_address}")
+                logger.info(f"クライアントが接続しました: {self.client_address}")
                 self.handle_client(self.client_socket)
         except KeyboardInterrupt:
-            print("サーバーを停止します")
+            logger.info("サーバーを停止します")
         except Exception as e:
-            print(f"サーバーでエラーが発生しました {e}")
+            logger.error(f"サーバーでエラーが発生しました {e}")
         finally:
             self.stop()
 
@@ -46,7 +48,7 @@ class SocketServer:
             self.client_socket.close()
         if self.server_socket:
             self.server_socket.close()
-        print("サーバーを完全に停止しました")
+        logger.info("サーバーを完全に停止しました")
 
     def handle_client(self, client_socket: socket.socket) -> None:
         """
@@ -61,12 +63,12 @@ class SocketServer:
                 data = client_socket.recv(1024).decode('utf-8')
                 if not data:
                     break
-                print(f"クライアントからのデータ: {data}")
+                logger.debug(f"クライアントからのデータ: {data}")
         except Exception as e:
-            print(f"クライアント処理中にエラーが発生しました: {e}")
+            logger.error(f"クライアント処理中にエラーが発生しました: {e}")
         finally:
-            self.stop()
-            print("クライアントとの接続を終了しました")
+            client_socket.close()
+            logger.info("クライアントとの接続を終了しました")
 
     def send_command(self, command: str) -> None:
         """
@@ -79,9 +81,11 @@ class SocketServer:
             try:
                 message = f"COMMAND:{command}\n"
                 self.client_socket.sendall(message.encode('utf-8'))
-                print(f"コマンドを送信しました: {command}")
+                logger.debug(f"コマンドを送信しました: {command}")
             except Exception as e:
-                print(f"コマンド送信中にエラーが発生しました: {e}")
+                logger.error(f"コマンド送信中にエラーが発生しました: {e}")
+        else:
+            logger.warning("クライアントが接続されていません")
 
     def send_file(self, file_path: str) -> None:
         """
@@ -97,6 +101,7 @@ class SocketServer:
         if self.client_socket:
             try:
                 if not os.path.isfile(file_path):
+                    logger.error(f"ファイルが見つかりません: {file_path}")
                     raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
 
                 # ファイル情報を送信
@@ -110,6 +115,8 @@ class SocketServer:
                     while chunk := f.read(1024):
                         self.client_socket.sendall(chunk)
 
-                print(f"ファイルを送信しました: {file_path}")
+                logger.debug(f"ファイルを送信しました: {file_path}")
             except Exception as e:
                 raise e
+        else:
+            logger.warning("クライアントが接続されていません")
