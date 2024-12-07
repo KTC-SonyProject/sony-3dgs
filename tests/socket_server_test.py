@@ -1,9 +1,9 @@
+from queue import Empty, Queue
 from threading import Thread
-from queue import Queue, Empty
 from time import sleep
 
-from app.unity_conn import SocketServer
 from app.logging_config import setup_logging
+from app.unity_conn import SocketServer
 
 setup_logging()
 
