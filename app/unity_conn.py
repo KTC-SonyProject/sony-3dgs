@@ -15,16 +15,24 @@ class SocketServer:
         self.client_socket = None
         self.client_address = None
         self.running = False
+        self.is_connected = False
 
     def start(self) -> None:
         """
         サーバを起動
         """
-        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.server_socket.bind((self.host, self.port))
-        self.server_socket.listen(1)
-        logger.info(f"サーバーが起動しました: {self.host}:{self.port}")
-        self.running = True
+        try:
+            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.server_socket.bind((self.host, self.port))
+            self.server_socket.listen(1)
+            logger.info(f"サーバーが起動しました: {self.host}:{self.port}")
+            self.running = True
+        except OSError as e:
+            logger.error(f"サーバーの起動中にエラーが発生しました: {e}")
+            self.stop()
+        except Exception as e:
+            logger.error(f"サーバーの起動中にエラーが発生しました: {e}")
+            self.stop()
 
         try:
             while self.running:
@@ -44,11 +52,35 @@ class SocketServer:
         サーバーを停止
         """
         self.running = False
+        self.is_connected = False
         if self.client_socket:
             self.client_socket.close()
         if self.server_socket:
             self.server_socket.close()
         logger.info("サーバーを完全に停止しました")
+
+    def _wait_for_result(self) -> str:
+        """
+        クライアントからRESULT行を受け取るまでブロッキングで待機するユーティリティ
+        """
+        buffer = ""
+        while True:
+            data = self.client_socket.recv(1024).decode('utf-8')
+            if not data:
+                raise ConnectionError("クライアントとの接続が切断されました")
+            buffer += data
+            lines = buffer.split('\n')
+            # 最後の行は未完成の可能性があるので、完全な行だけ処理
+            for i in range(len(lines)-1):
+                line = lines[i].strip()
+                if line.startswith("RESULT:"):
+                    # 結果を返す
+                    return line[len("RESULT:"):]
+            # 未完成の最後の行をbufferに残す
+            if not buffer.endswith('\n'):
+                buffer = lines[-1]
+            else:
+                buffer = ""
 
     def handle_client(self, client_socket: socket.socket) -> None:
         """
@@ -57,6 +89,7 @@ class SocketServer:
         Args:
             client_socket (socket.socket): クライアントとの通信用ソケット
         """
+        self.is_connected = True
         try:
             # クライアントからのデータを受け取る処理（必要なら実装）
             while self.running:
@@ -68,9 +101,10 @@ class SocketServer:
             logger.error(f"クライアント処理中にエラーが発生しました: {e}")
         finally:
             client_socket.close()
+            self.is_connected = False
             logger.info("クライアントとの接続を終了しました")
 
-    def send_command(self, command: str) -> None:
+    def send_command(self, command: str) -> str:
         """
         クライアントにコマンドを送信
 
@@ -82,12 +116,17 @@ class SocketServer:
                 message = f"COMMAND:{command}\n"
                 self.client_socket.sendall(message.encode('utf-8'))
                 logger.debug(f"コマンドを送信しました: {command}")
+
+                # コマンドの実行結果を待機
+                result = self._wait_for_result()
+                logger.info(f"コマンドの実行結果: {result}")
+                return result
             except Exception as e:
                 logger.error(f"コマンド送信中にエラーが発生しました: {e}")
         else:
             logger.warning("クライアントが接続されていません")
 
-    def send_file(self, file_path: str) -> None:
+    def send_file(self, file_path: str) -> str:
         """
         クライアントにファイルを送信
 
@@ -116,6 +155,11 @@ class SocketServer:
                         self.client_socket.sendall(chunk)
 
                 logger.debug(f"ファイルを送信しました: {file_path}")
+
+                # ファイルの送信結果を待機
+                result = self._wait_for_result()
+                logger.info(f"ファイルの送信結果: {result}")
+                return result
             except Exception as e:
                 raise e
         else:
