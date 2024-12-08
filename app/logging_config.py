@@ -1,10 +1,27 @@
 # logging_config.py
+import os
 import logging.config
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
+class JSTFormatter(logging.Formatter):
+    def formatTime(self, record, datefmt=None):
+        # 日本標準時に変換
+        dt = datetime.fromtimestamp(record.created, ZoneInfo("Asia/Tokyo"))
+        if datefmt:
+            return dt.strftime(datefmt)
+        return dt.isoformat()
 
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
-    "formatters": {"standard": {"format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"}},
+    "formatters": {"standard": {
+        "()": JSTFormatter,
+        "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+        "datefmt": "%Y-%m-%d %H:%M:%S",
+        }
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
@@ -12,20 +29,32 @@ LOGGING_CONFIG = {
             "level": "DEBUG",
             "stream": "ext://sys.stdout",
         },
-        "file": {
+        "app_file": {
             "class": "logging.FileHandler",
             "formatter": "standard",
             "level": "INFO",
             "filename": "app.log",
+            "mode": "a",
+            "encoding": "utf-8",
+        },
+        "full_file": {
+            "class": "logging.FileHandler",
+            "formatter": "standard",
+            "level": "INFO",
+            "filename": "full.log",
+            "mode": "a",
             "encoding": "utf-8",
         },
     },
     "loggers": {
-        "app": {"handlers": ["console", "file"], "level": "DEBUG", "propagate": False},
-        "": {"handlers": ["console", "file"], "level": "INFO", "propagate": True},
+        "app": {"handlers": ["console", "app_file", "full_file"], "level": "DEBUG", "propagate": False},
+        "": {"handlers": ["console", "app_file", "full_file"], "level": "INFO", "propagate": True},
     },
 }
 
 
 def setup_logging():
     logging.config.dictConfig(LOGGING_CONFIG)
+    # もしapp.logが存在していたら削除
+    if os.path.exists("./app.log"):
+        os.remove("app.log")
