@@ -21,8 +21,8 @@ class AppHeader(AppBar):
         self.page = page
         self.page_title = page_title
         self.toggle_dark_light_icon = IconButton(
-            icon=icons.LIGHT_MODE_OUTLINED,
-            selected_icon =icons.DARK_MODE_OUTLINED,
+            icon=icons.LIGHT_MODE_OUTLINED if self.page.theme_mode == "light" else icons.DARK_MODE_OUTLINED,
+            selected_icon =icons.DARK_MODE_OUTLINED if self.page.theme_mode == "light" else icons.LIGHT_MODE_OUTLINED,
             tooltip="switch light and dark mode",
             on_click=self.toggle_icon,
         )
@@ -35,10 +35,11 @@ class AppHeader(AppBar):
             PopupMenuItem(text="Top", on_click=lambda _: self.page.go("/")),
             PopupMenuItem(text="Home", on_click=lambda _: self.page.go("/home")),
             PopupMenuItem(),
-            PopupMenuItem(text="Voice", on_click=lambda e: self.page.go("/voice")),
-            PopupMenuItem(text="Documents", on_click=lambda e: self.page.go("/documents")),
+            PopupMenuItem(text="Voice", on_click=lambda _: self.page.go("/voice")),
+            PopupMenuItem(text="Documents", on_click=lambda _: self.page.go("/documents")),
+            PopupMenuItem(text="Unity App", on_click=lambda _: self.page.go("/unity")),
             PopupMenuItem(),
-            PopupMenuItem(text="Settings", on_click=lambda e: self.page.go("/settings")),
+            PopupMenuItem(text="Settings", on_click=lambda _: self.page.go("/settings")),
         ]
         self.leading=Icon(icons.TRIP_ORIGIN_ROUNDED)
         self.leading_width=60
