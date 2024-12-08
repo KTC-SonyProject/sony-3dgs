@@ -1,4 +1,5 @@
 import logging
+import os
 import threading
 
 import flet as ft
@@ -65,4 +66,10 @@ def main(page: Page):
 setup_logging()
 logger = logging.getLogger(__name__)
 logger.info("app started")
-app(target=main, port=8000)
+
+# ファイルのアップロード用のシークレットキーを環境変数から取得
+if not os.environ.get("FLET_SECRET_KEY"):
+    logger.warning("FLET_SECRET is not set.")
+    os.environ["FLET_SECRET_KEY"] = "secret"
+
+app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")

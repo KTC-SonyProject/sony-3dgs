@@ -21,7 +21,8 @@ LOGGING_CONFIG = {
         },
     },
     "loggers": {
-        "": {"handlers": ["console", "file"], "level": "DEBUG", "propagate": True},
+        "app": {"handlers": ["console", "file"], "level": "DEBUG", "propagate": False},
+        "": {"handlers": ["console", "file"], "level": "INFO", "propagate": True},
     },
 }
 

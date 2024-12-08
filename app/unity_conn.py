@@ -137,30 +137,31 @@ class SocketServer:
             FileNotFoundError: ファイルが見つからない場合
             e: その他のエラー
         """
-        if self.client_socket:
-            try:
-                if not os.path.isfile(file_path):
-                    logger.error(f"ファイルが見つかりません: {file_path}")
-                    raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
-
-                # ファイル情報を送信
-                file_name = os.path.basename(file_path)
-                file_size = os.path.getsize(file_path)
-                file_header = f"FILE:{file_name}:{file_size}\n"
-                self.client_socket.sendall(file_header.encode('utf-8'))
-
-                # ファイル内容を送信
-                with open(file_path, "rb") as f:
-                    while chunk := f.read(1024):
-                        self.client_socket.sendall(chunk)
-
-                logger.debug(f"ファイルを送信しました: {file_path}")
-
-                # ファイルの送信結果を待機
-                result = self._wait_for_result()
-                logger.info(f"ファイルの送信結果: {result}")
-                return result
-            except Exception as e:
-                raise e
-        else:
+        if not self.client_socket:
             logger.warning("クライアントが接続されていません")
+            raise ConnectionError("クライアントが接続されていません")
+
+        try:
+            if not os.path.isfile(file_path):
+                logger.error(f"ファイルが見つかりません: {file_path}")
+                raise FileNotFoundError(f"ファイルが見つかりません: {file_path}")
+
+            # ファイル情報を送信
+            file_name = os.path.basename(file_path)
+            file_size = os.path.getsize(file_path)
+            file_header = f"FILE:{file_name}:{file_size}\n"
+            self.client_socket.sendall(file_header.encode('utf-8'))
+
+            # ファイル内容を送信
+            with open(file_path, "rb") as f:
+                while chunk := f.read(1024):
+                    self.client_socket.sendall(chunk)
+
+            logger.debug(f"ファイルを送信しました: {file_path}")
+
+            # ファイルの送信結果を待機
+            result = self._wait_for_result()
+            logger.info(f"ファイルの送信結果: {result}")
+            return result
+        except Exception as e:
+            raise e

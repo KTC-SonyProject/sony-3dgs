@@ -1,3 +1,5 @@
+import logging
+
 from flet import (
     Page,
     ScrollMode,
@@ -12,8 +14,10 @@ from app.components.header import AppHeader
 from app.components.home_body import HomeBody
 from app.components.settings_body import SettingsBody
 from app.components.top_body import TopBody
+from app.components.unity_body import UnityBody
 from app.components.voice_body import VoiceBody
 
+logger = logging.getLogger(__name__)
 
 class MyLayout(View):
     def __init__(self, page: Page, route='/'):
@@ -56,6 +60,10 @@ class MyLayout(View):
                 'title': 'Chat',
                 'layout': ChatBody(self.page),
             },
+            '/unity': {
+                'title': 'Unity',
+                'layout': UnityBody(self.page),
+            },
         }
 
         self.default_route_config = {
@@ -68,15 +76,16 @@ class MyLayout(View):
                 'title': 'Document',
                 'layout': DocumentsBody(self.page, self.troute.document_id),
             }
-            print(f"Document ID: {self.troute.document_id}")
+            logger.debug(f"Document ID: {self.troute.document_id}")
         elif self.troute.match("/documents/:document_id/edit"):
             self.route_info = {
                 "title": "Edit Document",
                 "layout": EditDocumentBody(self.page, self.troute.document_id),
             }
-            print(f"Edit Document ID: {self.troute.document_id}")
+            logger.debug(f"Edit Document ID: {self.troute.document_id}")
         else:
             self.route_info = self.route_config.get(self.route, self.default_route_config)
+            logger.debug(f"Route: {self.route}")
 
         self.controls = [
             AppHeader(self.page, self.route_info['title'].upper()),
