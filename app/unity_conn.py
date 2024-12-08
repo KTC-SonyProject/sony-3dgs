@@ -28,11 +28,13 @@ class SocketServer:
             logger.info(f"サーバーが起動しました: {self.host}:{self.port}")
             self.running = True
         except OSError as e:
-            logger.error(f"サーバーの起動中にエラーが発生しました: {e}")
+            logger.error(f"サーバを起動させるポートがすでに使用されています: {e}")
             self.stop()
+            raise e
         except Exception as e:
             logger.error(f"サーバーの起動中にエラーが発生しました: {e}")
             self.stop()
+            raise e
 
         try:
             while self.running:

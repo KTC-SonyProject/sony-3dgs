@@ -15,15 +15,15 @@ from app.settings import load_settings
 from app.unity_conn import SocketServer
 from app.views import MyView
 
+server = SocketServer()
+server_thread = threading.Thread(target=server.start, daemon=True)
+server_thread.start()
 
 def main(page: Page):
     page.title = "Spadge"
     page.scroll = ScrollMode.AUTO
     page.padding = 10
 
-    server = SocketServer()
-    server_thread = threading.Thread(target=server.start, daemon=True)
-    server_thread.start()
     db = DatabaseHandler(load_settings())
     page.data = {
         "settings_file": "local.settings.json",
@@ -72,4 +72,19 @@ if not os.environ.get("FLET_SECRET_KEY"):
     logger.warning("FLET_SECRET is not set.")
     os.environ["FLET_SECRET_KEY"] = "secret"
 
-app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")
+try:
+    app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")
+except KeyboardInterrupt:
+    logger.info("App stopped by user")
+    server.stop()
+    server_thread.join()
+    raise
+except OSError:
+    logger.error("Port is already in use")
+    server.stop()
+    server_thread.join()
+    # もう一度tryする
+    app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")
+except Exception as e:
+    logger.error(f"Error starting app: {e}")
+    raise e
