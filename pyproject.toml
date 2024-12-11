@@ -8,7 +8,6 @@ packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-flet = "^0.25.1"
 langchain = "^0.3.7"
 langchain-openai = "^0.2.9"
 langchain-community = "^0.3.7"
@@ -18,6 +17,7 @@ langgraph = "^0.2.53"
 psycopg2-binary = "^2.9.10"
 langgraph-checkpoint-postgres = "^2.0.4"
 langchain-chroma = "^0.1.4"
+flet = {extras = ["all"], version = "^0.25.1"}
 
 
 [tool.poetry.group.dev.dependencies]
