@@ -50,6 +50,28 @@ class BaseSettingsColumn(Column):
         """各設定のコントロールを生成する（サブクラスで実装）"""
         return Column()
 
+    def get_setting_value(self, key):
+        """設定の値を取得する"""
+        keys = key.split(".")
+        target = self.settings
+        for k in keys:
+            if k not in target:
+                raise ValueError(f"Key {k} not found in settings")
+            target = target[k]
+        return target
+
+    def update_settings(self, key):
+        """設定を更新する"""
+        def handler(e):
+            keys = key.split(".")
+            target = self.settings
+            for k in keys[:-1]:
+                if k not in target:
+                    raise ValueError(f"Key {k} not found in settings")
+                target = target[k]
+            target[keys[-1]] = e.control.value
+        return handler
+
 
 class GeneralSettingsColumn(BaseSettingsColumn):
     def __init__(self, page: Page, settings: dict):
@@ -61,13 +83,13 @@ class GeneralSettingsColumn(BaseSettingsColumn):
                     controls=[
                         TextField(
                             label="App Title",
-                            value=self.settings.get("app_name", ""),
-                            on_change=lambda e: self.settings.update({"app_name": e.control.value}),
+                            value=self.get_setting_value("app_name"),
+                            on_change=self.update_settings("app_name"),
                         ),
                         TextField(
                             label="App Description",
-                            value=self.settings.get("app_description", ""),
-                            on_change=lambda e: self.settings.update({"app_description": e.control.value}),
+                            value=self.get_setting_value("app_description"),
+                            on_change=self.update_settings("app_description"),
                         ),
                     ]
                 )
@@ -78,7 +100,7 @@ class DBSettingsColumn(BaseSettingsColumn):
 
     def on_change_use_postgres(self, e):
         """PostgreSQLの使用を切り替える"""
-        self.settings["use_postgres"] = e.control.value
+        self.update_settings("use_postgres")(e)
         self.controls[2].controls[1].visible = e.control.value
         self.page.update()
 
@@ -88,52 +110,42 @@ class DBSettingsColumn(BaseSettingsColumn):
                     controls=[
                         Switch(
                             label="Use PostgreSQL",
-                            value=self.settings.get("use_postgres", False),
+                            value=self.get_setting_value("use_postgres"),
                             on_change=self.on_change_use_postgres,
                         ),
                         Column(
                             spacing=10,
-                            visible=self.settings.get("use_postgres", False),
+                            visible=self.get_setting_value("use_postgres"),
                             controls=[
                                 Text("PostgreSQL Settings", size=20),
                                 Divider(),
                                 TextField(
                                     label="Host",
-                                    value=self.settings["postgres_settings"].get("host", ""),
-                                    on_change=lambda e: self.settings["postgres_settings"].update(
-                                        {"host": e.control.value}
-                                    ),
+                                    value=self.get_setting_value("postgres_settings.host"),
+                                    on_change=self.update_settings("postgres_settings.host"),
                                 ),
                                 TextField(
                                     label="Port",
-                                    value=self.settings["postgres_settings"].get("port", ""),
-                                    on_change=lambda e: self.settings["postgres_settings"].update(
-                                        {"port": int(e.control.value)}
-                                    ),
+                                    value=self.get_setting_value("postgres_settings.port"),
+                                    on_change=self.update_settings("postgres_settings.port"),
                                     input_filter=NumbersOnlyInputFilter(),
                                 ),
                                 TextField(
                                     label="Database",
-                                    value=self.settings["postgres_settings"].get("database", ""),
-                                    on_change=lambda e: self.settings["postgres_settings"].update(
-                                        {"database": e.control.value}
-                                    ),
+                                    value=self.get_setting_value("postgres_settings.database"),
+                                    on_change=self.update_settings("postgres_settings.database"),
                                 ),
                                 TextField(
                                     label="User",
-                                    value=self.settings["postgres_settings"].get("user", ""),
-                                    on_change=lambda e: self.settings["postgres_settings"].update(
-                                        {"user": e.control.value}
-                                    ),
+                                    value=self.get_setting_value("postgres_settings.user"),
+                                    on_change=self.update_settings("postgres_settings.user"),
                                 ),
                                 TextField(
                                     label="Password",
-                                    value=self.settings["postgres_settings"].get("password", ""),
+                                    value=self.get_setting_value("postgres_settings.password"),
                                     password=True,
                                     can_reveal_password=True,
-                                    on_change=lambda e: self.settings["postgres_settings"].update(
-                                        {"password": e.control.value}
-                                    ),
+                                    on_change=self.update_settings("postgres_settings.password"),
                                 ),
                             ],
                         ),
@@ -155,36 +167,30 @@ class LLMSettingsColumn(BaseSettingsColumn):
                     Divider(),
                     TextField(
                         label="Endpoint",
-                        value=self.settings.get("azure_llm_settings", {}).get("endpoint", ""),
-                        on_change=lambda e: self.settings["azure_llm_settings"].update({"endpoint": e.control.value}),
+                        value=self.get_setting_value("azure_llm_settings.endpoint"),
+                        on_change=self.update_settings("azure_llm_settings.endpoint"),
                     ),
                     TextField(
                         label="API Key",
-                        value=self.settings.get("azure_llm_settings", {}).get("api_key", ""),
+                        value=self.get_setting_value("azure_llm_settings.api_key"),
                         password=True,
                         can_reveal_password=True,
-                        on_change=lambda e: self.settings["azure_llm_settings"].update({"api_key": e.control.value}),
+                        on_change=self.update_settings("azure_llm_settings.api_key"),
                     ),
                     TextField(
                         label="Deployment Name",
-                        value=self.settings.get("azure_llm_settings", {}).get("deployment_name", ""),
-                        on_change=lambda e: self.settings["azure_llm_settings"].update(
-                            {"deployment_name": e.control.value}
-                        ),
+                        value=self.get_setting_value("azure_llm_settings.deployment_name"),
+                        on_change=self.update_settings("azure_llm_settings.deployment_name"),
                     ),
                     TextField(
                         label="Deployment Name (Embeddings)",
-                        value=self.settings.get("azure_llm_settings", {}).get("deployment_embdding_name", ""),
-                        on_change=lambda e: self.settings["azure_llm_settings"].update(
-                            {"deployment_embdding_name": e.control.value}
-                        ),
+                        value=self.get_setting_value("azure_llm_settings.deployment_embdding_name"),
+                        on_change=self.update_settings("azure_llm_settings.deployment_embdding_name"),
                     ),
                     TextField(
                         label="API Version",
-                        value=self.settings.get("azure_llm_settings", {}).get("api_version", ""),
-                        on_change=(
-                            lambda e: self.settings["azure_llm_settings"].update({"api_version": e.control.value})
-                        ),
+                        value=self.get_setting_value("azure_llm_settings.api_version"),
+                        on_change=self.update_settings("azure_llm_settings.api_version"),
                     ),
                 ],
             )
@@ -216,13 +222,13 @@ class LLMSettingsColumn(BaseSettingsColumn):
 
     def on_change_llm_provider(self, e):
         """LLMプロバイダーを切り替える"""
-        self.settings["llm_provider"] = e.control.value
+        self.update_settings("llm_provider")(e)
         self.controls[2].controls[1] = self.get_llm_provider_control(e.control.value)
         self.page.update()
 
     def on_change_use_langsmith(self, e):
         """LangSmithの使用を切り替える"""
-        self.settings["use_langsmith"] = e.control.value
+        self.update_settings("use_langsmith")(e)
         self.controls[2].controls[4].controls[4].visible = e.control.value
         self.page.update()
 
@@ -234,7 +240,7 @@ class LLMSettingsColumn(BaseSettingsColumn):
                     controls=[
                         Dropdown(
                             label="LLM Provider",
-                            value=self.settings.get("llm_provider", "azure"),
+                            value=self.get_setting_value("llm_provider"),
                             options=[
                                 dropdown.Option("azure"),
                                 dropdown.Option("gemini"),
@@ -242,7 +248,7 @@ class LLMSettingsColumn(BaseSettingsColumn):
                             ],
                             on_change=self.on_change_llm_provider,
                         ),
-                        self.get_llm_provider_control(self.settings.get("llm_provider", "azure")),
+                        self.get_llm_provider_control(self.get_setting_value("llm_provider")),
                         Column(
                             spacing=10,
                             controls=[
@@ -257,27 +263,23 @@ class LLMSettingsColumn(BaseSettingsColumn):
                                 ),
                                 Switch(
                                     label="Use LangSmith",
-                                    value=self.settings.get("use_langsmith", False),
+                                    value=self.get_setting_value("use_langsmith"),
                                     on_change=self.on_change_use_langsmith,
                                 ),
                                 Column(
-                                    visible=self.settings.get("use_langsmith", False),
+                                    visible=self.get_setting_value("use_langsmith"),
                                     controls=[
                                         TextField(
                                             label="project name",
-                                            value=self.settings.get("langsmith_settings", {}).get("project_name", ""),
-                                            on_change=lambda e: self.settings["langsmith_settings"].update(
-                                                "project_name", e.control.value
-                                            ),
+                                            value=self.get_setting_value("langsmith_settings.project_name"),
+                                            on_change=self.update_settings("langsmith_settings.project_name"),
                                         ),
                                         TextField(
                                             label="LangSmith API Key",
-                                            value=self.settings.get("langsmith_settings", {}).get("api_key", ""),
+                                            value=self.get_setting_value("langsmith_settings.api_key"),
                                             password=True,
                                             can_reveal_password=True,
-                                            on_change=lambda e: self.settings["langsmith_settings"].update(
-                                                "api_key", e.control.value
-                                            ),
+                                            on_change=self.update_settings("langsmith_settings.api_key"),
                                         ),
                                     ],
                                 ),
