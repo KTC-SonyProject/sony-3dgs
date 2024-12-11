@@ -1,16 +1,16 @@
 from flet import (
     AppBar,
+    Colors,
     Container,
     Icon,
     IconButton,
+    Icons,
     MainAxisAlignment,
     Page,
     PopupMenuButton,
     PopupMenuItem,
     Row,
     Text,
-    colors,
-    icons,
     margin,
 )
 
@@ -21,13 +21,13 @@ class AppHeader(AppBar):
         self.page = page
         self.page_title = page_title
         self.toggle_dark_light_icon = IconButton(
-            icon=icons.LIGHT_MODE_OUTLINED if self.page.theme_mode == "light" else icons.DARK_MODE_OUTLINED,
-            selected_icon =icons.DARK_MODE_OUTLINED if self.page.theme_mode == "light" else icons.LIGHT_MODE_OUTLINED,
+            icon=Icons.LIGHT_MODE_OUTLINED if self.page.theme_mode == "light" else Icons.DARK_MODE_OUTLINED,
+            selected_icon =Icons.DARK_MODE_OUTLINED if self.page.theme_mode == "light" else Icons.LIGHT_MODE_OUTLINED,
             tooltip="switch light and dark mode",
             on_click=self.toggle_icon,
         )
         self.chat_icon = IconButton(
-            icon=icons.CHAT_BUBBLE_OUTLINE,
+            icon=Icons.CHAT_BUBBLE_OUTLINE,
             tooltip="Chat",
             on_click=lambda _: self.page.go("/chat"),
         )
@@ -41,12 +41,12 @@ class AppHeader(AppBar):
             PopupMenuItem(),
             PopupMenuItem(text="Settings", on_click=lambda _: self.page.go("/settings")),
         ]
-        self.leading=Icon(icons.TRIP_ORIGIN_ROUNDED)
+        self.leading=Icon(Icons.TRIP_ORIGIN_ROUNDED)
         self.leading_width=60
         self.title=Text(value=self.page_title, size=32, text_align="center")
         self.center_title=False
         self.toolbar_height=75
-        self.bgcolor=colors.SURFACE_VARIANT
+        self.bgcolor=Colors.SURFACE_CONTAINER_HIGHEST
         self.actions=[
             Container(
                 margin=margin.only(left=50, right=25),

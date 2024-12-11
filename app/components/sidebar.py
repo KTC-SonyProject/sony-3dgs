@@ -1,9 +1,11 @@
 from flet import (
+    Colors,
     Container,
     CrossAxisAlignment,
     FloatingActionButton,
     Icon,
     IconButton,
+    Icons,
     NavigationRail,
     NavigationRailDestination,
     NavigationRailLabelType,
@@ -12,8 +14,6 @@ from flet import (
     Text,
     alignment,
     border_radius,
-    colors,
-    icons,
 )
 
 
@@ -24,18 +24,18 @@ class Sidebar(Container):
         self.nav_rail_visible = True
         self.nav_rail_items = [
             NavigationRailDestination(
-                icon=icons.FAVORITE_BORDER,
-                selected_icon=icons.FAVORITE,
+                icon=Icons.FAVORITE_BORDER,
+                selected_icon=Icons.FAVORITE,
                 label="Favorite"
             ),
             NavigationRailDestination(
-                icon_content=Icon(icons.BOOKMARK_BORDER),
-                selected_icon_content=Icon(icons.BOOKMARK),
+                icon_content=Icon(Icons.BOOKMARK_BORDER),
+                selected_icon_content=Icon(Icons.BOOKMARK),
                 label="Bookmark"
             ),
             NavigationRailDestination(
-                icon=icons.SETTINGS_OUTLINED,
-                selected_icon_content=Icon(icons.SETTINGS),
+                icon=Icons.SETTINGS_OUTLINED,
+                selected_icon_content=Icon(Icons.SETTINGS),
                 label_content=Text("Settings"),
             ),
         ]
@@ -45,16 +45,16 @@ class Sidebar(Container):
             label_type=NavigationRailLabelType.ALL,
             min_width=100,
             min_extended_width=400,
-            leading=FloatingActionButton(icon=icons.CREATE, text="ADD"),
+            leading=FloatingActionButton(icon=Icons.CREATE, text="ADD"),
             group_alignment=-0.9,
             destinations=self.nav_rail_items,
             on_change=self.tap_nav_icon,
         )
         self.toggle_nav_rail_button = IconButton(
-            icon=icons.ARROW_CIRCLE_LEFT,
-            icon_color=colors.BLUE_GREY_400,
+            icon=Icons.ARROW_CIRCLE_LEFT,
+            icon_color=Colors.BLUE_GREY_400,
             selected=False,
-            selected_icon=icons.ARROW_CIRCLE_RIGHT,
+            selected_icon=Icons.ARROW_CIRCLE_RIGHT,
             on_click=self.toggle_nav_rail,
             tooltip="Collapse Nav Bar",
         )
@@ -63,7 +63,7 @@ class Sidebar(Container):
             controls=[
                 self.nav_rail,
                 Container(
-                    bgcolor=colors.BLACK26,
+                    bgcolor=Colors.BLACK26,
                     border_radius=border_radius.all(30),
                     height=480,
                     alignment=alignment.center_right,

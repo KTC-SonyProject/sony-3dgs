@@ -5,6 +5,7 @@ from flet import (
     Column,
     Container,
     Icon,
+    Icons,
     ListTile,
     MainAxisAlignment,
     Page,
@@ -13,7 +14,6 @@ from flet import (
     TextButton,
     alignment,
     app,
-    icons,
 )
 
 
@@ -60,19 +60,19 @@ class HomeList(Column):
             HomeCardItem(
                 title="Voice",
                 subtitle="AIと会話を通じて展示物の情報について質問したり、画面の操作を行うことができます。",
-                icon=icons.VOICE_CHAT,
+                icon=Icons.VOICE_CHAT,
                 go_page="voice",
             ),
             HomeCardItem(
                 title="Documents",
                 subtitle="展示物の情報を閲覧することができます。",
-                icon=icons.DESCRIPTION,
+                icon=Icons.DESCRIPTION,
                 go_page="documents",
             ),
             HomeCardItem(
                 title="Settings",
                 subtitle="アプリケーションの設定を変更することができます。",
-                icon=icons.SETTINGS,
+                icon=Icons.SETTINGS,
                 go_page="settings",
             ),
         ]

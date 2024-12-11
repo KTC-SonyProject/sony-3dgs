@@ -10,6 +10,7 @@ from flet import (
     Dropdown,
     ElevatedButton,
     IconButton,
+    Icons,
     NumbersOnlyInputFilter,
     Page,
     Row,
@@ -22,7 +23,6 @@ from flet import (
     TextField,
     alignment,
     dropdown,
-    icons,
 )
 
 from app.ai.settings import langsmith_settigns
@@ -362,7 +362,7 @@ class SettingsBody(Column):
         self.banner = Banner(
             bgcolor="red" if status == "error" else "green",
             content=Text("Settings saved successfully!" if status == "success" else "Error saving settings!"),
-            actions=[IconButton(icon=icons.CLOSE, on_click=self.close_banner)],
+            actions=[IconButton(icon=Icons.CLOSE, on_click=self.close_banner)],
         )
         return self.banner
 

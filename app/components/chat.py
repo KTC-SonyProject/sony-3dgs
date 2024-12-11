@@ -1,10 +1,12 @@
 from flet import (
     CircleAvatar,
+    Colors,
     Column,
     Container,
     ControlEvent,
     CrossAxisAlignment,
     IconButton,
+    Icons,
     ListView,
     MainAxisAlignment,
     Markdown,
@@ -16,8 +18,6 @@ from flet import (
     TextField,
     app,
     border,
-    colors,
-    icons,
     padding,
 )
 
@@ -42,7 +42,7 @@ class ChatMessage(Row):
                 # アイコン
                 CircleAvatar(
                     content=Text(self.get_initials(message.user_name)),
-                    color=colors.WHITE,
+                    color=Colors.WHITE,
                     bgcolor=self.get_avatar_color(message.user_name)
                 ),
                 # 名前とメッセージのカラム
@@ -83,7 +83,7 @@ class ChatMessage(Row):
                 # # アイコン
                 # CircleAvatar(
                 #     content=Text(self.get_initials(message.user_name)),
-                #     color=colors.WHITE,
+                #     color=Colors.WHITE,
                 #     bgcolor=self.get_avatar_color(message.user_name)
                 # ),
             ]
@@ -93,23 +93,23 @@ class ChatMessage(Row):
         return user_name[:1].capitalize()
 
     # ユーザ名に基づきハッシュを使いアイコンの色をランダムに決める
-    def get_avatar_color(self, user_name: str) -> colors:
-        colors_lookup = [
-            colors.AMBER,
-            colors.BLUE,
-            colors.BROWN,
-            colors.CYAN,
-            colors.GREEN,
-            colors.INDIGO,
-            colors.LIME,
-            colors.ORANGE,
-            colors.PINK,
-            colors.PURPLE,
-            colors.RED,
-            colors.TEAL,
-            colors.YELLOW,
+    def get_avatar_color(self, user_name: str) -> Colors:
+        Colors_lookup = [
+            Colors.AMBER,
+            Colors.BLUE,
+            Colors.BROWN,
+            Colors.CYAN,
+            Colors.GREEN,
+            Colors.INDIGO,
+            Colors.LIME,
+            Colors.ORANGE,
+            Colors.PINK,
+            Colors.PURPLE,
+            Colors.RED,
+            Colors.TEAL,
+            Colors.YELLOW,
         ]
-        return colors_lookup[hash(user_name) % len(colors_lookup)]
+        return Colors_lookup[hash(user_name) % len(Colors_lookup)]
 
     def tap_link(self, e: ControlEvent) -> None:
         try:
@@ -129,7 +129,7 @@ class ChatBody(Column):
             self._initialize_chatbot(session_id)
         except ValueError as e:
             self.controls = [Container(
-                content=Text(str(e), color=colors.RED),
+                content=Text(str(e), color=Colors.RED),
                 padding=padding.all(20),
             )]
             return
@@ -145,14 +145,14 @@ class ChatBody(Column):
             on_submit=self.send_message_click
         )
         self.progress = ProgressBar(
-            color=colors.PINK,
-            bgcolor=colors.GREY_200,
+            color=Colors.PINK,
+            bgcolor=Colors.GREY_200,
             visible=False
         )
         self.controls = [
             Container(
                 content=self.chat,
-                border=border.all(1, colors.OUTLINE),
+                border=border.all(1, Colors.OUTLINE),
                 border_radius=5,
                 expand=True  # Containerも縦に展開する
             ),
@@ -161,7 +161,7 @@ class ChatBody(Column):
                 [
                     self.new_message,
                     IconButton(
-                        icon=icons.SEND_ROUNDED,
+                        icon=Icons.SEND_ROUNDED,
                         tooltip="Send message",
                         on_click=self.send_message_click
                     )

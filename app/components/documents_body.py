@@ -2,6 +2,7 @@
 from flet import (
     AlertDialog,
     ButtonStyle,
+    Colors,
     Column,
     Container,
     CrossAxisAlignment,
@@ -9,6 +10,7 @@ from flet import (
     ElevatedButton,
     FloatingActionButton,
     IconButton,
+    Icons,
     InputBorder,
     MainAxisAlignment,
     Markdown,
@@ -26,8 +28,6 @@ from flet import (
     VerticalDivider,
     alignment,
     border_radius,
-    colors,
-    icons,
     padding,
 )
 
@@ -45,7 +45,7 @@ class RailDescription(Row):
 
         self.controls = [
             Text(self.title, width=150, max_lines=1, overflow=TextOverflow.ELLIPSIS),
-            IconButton(icon=icons.EDIT_NOTE, tooltip="Edit Documents", on_click=self.click),
+            IconButton(icon=Icons.EDIT_NOTE, tooltip="Edit Documents", on_click=self.click),
         ]
 
     def click(self, e):
@@ -66,8 +66,8 @@ class Sidebar(Container):
                 NavigationRailDestination(
                     label_content=RailDescription(self.page, document[1], document[0]),
                     label=document[1],
-                    selected_icon=icons.CHEVRON_RIGHT_ROUNDED,
-                    icon=icons.CHEVRON_RIGHT_OUTLINED,
+                    selected_icon=Icons.CHEVRON_RIGHT_ROUNDED,
+                    icon=Icons.CHEVRON_RIGHT_OUTLINED,
                     data=document[0],
                 )
             )
@@ -76,7 +76,7 @@ class Sidebar(Container):
             selected_index=None,
             label_type=NavigationRailLabelType.ALL,
             # min_width=100,
-            leading=FloatingActionButton(icon=icons.CREATE, text="ADD DOCUMENT", on_click=self.open_modal),
+            leading=FloatingActionButton(icon=Icons.CREATE, text="ADD DOCUMENT", on_click=self.open_modal),
             group_alignment=-0.9,
             destinations=self.nav_rail_items,
             on_change=self.tap_nav_icon,
@@ -84,10 +84,10 @@ class Sidebar(Container):
             extended=True,
         )
         self.toggle_nav_rail_button = IconButton(
-            icon=icons.ARROW_CIRCLE_LEFT,
-            icon_color=colors.BLUE_GREY_400,
+            icon=Icons.ARROW_CIRCLE_LEFT,
+            icon_color=Colors.BLUE_GREY_400,
             selected=False,
-            selected_icon=icons.ARROW_CIRCLE_RIGHT,
+            selected_icon=Icons.ARROW_CIRCLE_RIGHT,
             on_click=self.toggle_nav_rail,
             tooltip="Collapse Nav Bar",
         )
@@ -114,7 +114,7 @@ class Sidebar(Container):
             controls=[
                 self.nav_rail,
                 Container(
-                    bgcolor=colors.BLACK26,
+                    bgcolor=Colors.BLACK26,
                     border_radius=border_radius.all(30),
                     # height=480,
                     alignment=alignment.center_right,
@@ -246,7 +246,7 @@ class EditBody(Row):
             value=self.document[2],
             multiline=True,
             expand=True,
-            border_color=colors.TRANSPARENT,
+            border_color=Colors.TRANSPARENT,
             on_change=self.update_preview,
             hint_text="Document here...",
         )
@@ -254,7 +254,7 @@ class EditBody(Row):
 
         self.controls = [
             self.text_field,
-            VerticalDivider(color=colors.BLUE_GREY_400),
+            VerticalDivider(color=Colors.BLUE_GREY_400),
             self.document_body,
         ]
 
@@ -278,7 +278,7 @@ class EditDocumentBody(Column):
         self.spacing = 10
 
         self.dlg_modal = AlertDialog(
-            title=Text("※注意※", color=colors.RED),
+            title=Text("※注意※", color=Colors.RED),
             modal=True,
             content=Text("ドキュメントの変更内容を保存せずに戻りますか？"),
             actions=[
@@ -305,7 +305,7 @@ class EditDocumentBody(Column):
                 controls=[
                     Row(
                         controls=[
-                            IconButton(icon=icons.ARROW_BACK, on_click=self.open_modal, tooltip="Back"),
+                            IconButton(icon=Icons.ARROW_BACK, on_click=self.open_modal, tooltip="Back"),
                             TextField(
                                 value=self.document_title,
                                 border=InputBorder.UNDERLINE,
@@ -314,14 +314,14 @@ class EditDocumentBody(Column):
                     ),
                     Row(
                         controls=[
-                            TextButton(text="Save", on_click=self.save_document, icon=icons.SAVE),
-                            TextButton(text="Delete", on_click=self.delete_document, icon=icons.DELETE),
+                            TextButton(text="Save", on_click=self.save_document, icon=Icons.SAVE),
+                            TextButton(text="Delete", on_click=self.delete_document, icon=Icons.DELETE),
                         ],
                     ),
                 ],
                 alignment=MainAxisAlignment.SPACE_BETWEEN,
             ),
-            Divider(color=colors.BLUE_GREY_400),
+            Divider(color=Colors.BLUE_GREY_400),
             EditBody(self.page, self.document_id),
         ]
 
