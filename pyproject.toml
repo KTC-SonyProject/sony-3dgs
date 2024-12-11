@@ -21,7 +21,7 @@ langchain-chroma = "^0.1.4"
 
 
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.7.4"
+ruff = "^0.8.2"
 ipython = "^8.29.0"
 
 [build-system]
