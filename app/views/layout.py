@@ -12,10 +12,10 @@ from app.components.chat import ChatBody
 from app.components.documents_body import DocumentsBody, EditDocumentBody
 from app.components.header import AppHeader
 from app.components.home_body import HomeBody
-from app.components.settings_body import SettingsBody
 from app.components.top_body import TopBody
 from app.components.unity_body import UnityBody
 from app.components.voice_body import VoiceBody
+from app.views.settings_view import SettingsView
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,6 @@ class MyLayout(View):
         self.route = route
         self.expand = True
         self.scroll = None
-        # self.vertical_alignment = MainAxisAlignment.CENTER
-        # self.horizontal_alignment = CrossAxisAlignment.CENTER
 
         # スクロールモードを設定しているとエラーが発生するため、チャットページのみスクロールモードを無効にする
         if self.route == '/':
@@ -54,7 +52,8 @@ class MyLayout(View):
             },
             '/settings': {
                 'title': 'Settings',
-                'layout': SettingsBody(self.page),
+                # 'layout': SettingsBody(self.page),
+                'layout': SettingsView(self.page, self.page.data['settings']),
             },
             '/chat': {
                 'title': 'Chat',

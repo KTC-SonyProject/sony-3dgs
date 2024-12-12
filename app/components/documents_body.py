@@ -201,7 +201,7 @@ class DocumentsBody(Row):
 
 
 
-        self.settings = self.page.data["settings"]()
+        # self.settings = self.page.data["settings"]()
         self.db = self.page.data["db"]
 
         self.documents_list = self.get_document_list()
@@ -237,7 +237,7 @@ class EditBody(Row):
         self.vertical_alignment = CrossAxisAlignment.START
         self.expand = True
 
-        self.settings = self.page.data["settings"]()
+        # self.settings = self.page.data["settings"]()
         self.db = self.page.data["db"]
 
         self.document = self.get_document_body(document_id)

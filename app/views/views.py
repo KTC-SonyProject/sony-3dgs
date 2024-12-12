@@ -3,7 +3,7 @@ from flet import (
     Row,
 )
 
-from app.layout import MyLayout
+from app.views.layout import MyLayout
 
 
 class MyView(Row):

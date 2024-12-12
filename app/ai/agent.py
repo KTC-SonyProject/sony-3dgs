@@ -15,8 +15,8 @@ from typing_extensions import TypedDict
 
 from app.ai.settings import langsmith_settigns, llm_settings
 from app.ai.tools import DisplayOperationTool, tools
-from app.settings import load_settings
 from app.unity_conn import SocketServer
+from app.viewmodels.settings_manager import load_settings
 
 
 class State(TypedDict):
@@ -54,7 +54,7 @@ class ChatbotGraph:
         self.graph = self.graph_builder.compile(checkpointer=self.memory)
 
     def _initialize_memory(self) -> None:
-        settings = load_settings("db_settings")
+        settings = load_settings("database_settings")
         if settings["use_postgres"]:
             self.DB_URI = "postgresql://postgres:postgres@postgres:5432/main_db?sslmode=disable"
             self.connection_kwargs = {"autocommit": True, "prepare_threshold": 0}
@@ -92,9 +92,6 @@ class ChatbotGraph:
             raise ValueError("ストリーム更新に失敗しました。") from e
 
 
-
-
-
 if __name__ == "__main__":
     import pprint
     from threading import Thread
@@ -116,8 +113,6 @@ if __name__ == "__main__":
     for i, message in enumerate(messages_list, start=1):
         sender = "ユーザー" if "HumanMessage" in str(type(message)) else "アシスタント"
         print(f"{i}. **{sender}:** {message.content}")
-
-
 
     # while True:
     #     try:

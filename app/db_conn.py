@@ -5,7 +5,7 @@ from pathlib import Path
 
 from psycopg_pool import ConnectionPool
 
-from app.settings import load_settings
+from app.viewmodels.settings_manager import SettingsManager
 
 # ロギングの設定
 logging.basicConfig(level=logging.INFO)
@@ -13,40 +13,55 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseHandler:
-    def __init__(self, settings: dict):
+    def __init__(self, settings_manager: SettingsManager):
         """
         データベース接続情報を初期化するクラス
         :param settings: 設定辞書 (PostgreSQL/SQLite両対応)
         :param use_connection_kwargs: PostgreSQLで接続パラメータを追加するか
         """
-        self.settings = settings["db_settings"]
-        self.use_postgres = self.settings.get("use_postgres", False)
+        self.settings_manager = settings_manager
+        self.use_postgres = self.settings_manager.get_setting("database_settings.use_postgres")
 
         if self.use_postgres:
             self._init_postgres()
         else:
             self._init_sqlite()
 
+    def get_nested_setting(self, nested_key: str, key: str):
+        """
+        ネストされた設定を取得する
+        :param nested_key: ネストされた設定のキー
+        :param key: ネストされた設定のキー
+        :return: ネストされた設定の値
+        """
+        return self.settings_manager.get_setting(f"{nested_key}.{key}")
+
     def _init_postgres(self):
         """PostgreSQLデータベースに接続するための初期化を行う"""
-        postgres_settings = self.settings.get("postgres_settings")
-        db_uri = f"postgresql://{postgres_settings['user']}:{postgres_settings['password']}@{postgres_settings['host']}:{postgres_settings['port']}/{postgres_settings['database']}?sslmode=disable"
+        nested_key = "database_settings.postgres_settings"
+        db_uri = (
+            f"postgresql://"
+            f"{self.get_nested_setting(nested_key, 'user')}:{self.get_nested_setting(nested_key, 'password')}"
+            f"@{self.get_nested_setting(nested_key, 'host')}:{self.get_nested_setting(nested_key, 'port')}"
+            f"/{self.get_nested_setting(nested_key, 'database')}?sslmode=disable"
+        )
         self.pool = ConnectionPool(conninfo=db_uri, max_size=20, open=True)
         logging.info("PostgreSQL connection pool is initialized.")
 
     def _init_sqlite(self):
         """SQLiteデータベースに接続するための初期化を行う"""
-        sqlite_settings = self.settings.get("sqlite_settings")
+        nested_key = "database_settings.sqlite_settings"
+        database_path = self.get_nested_setting(nested_key, "database")
         # sqliteのファイルが存在しない場合は作成
-        if not Path(sqlite_settings["database"]).exists():
-            Path(sqlite_settings["database"]).touch()
+        if not Path(database_path).exists():
+            Path(database_path).touch()
             # init_sqlファイルを使用してテーブルを作成
-            with sqlite3.connect(sqlite_settings["database"]) as connection:
+            with sqlite3.connect(database_path) as connection:
                 with open("db/sqlite/init/1_init.sql") as f:
                     connection.executescript(f.read())
             logging.info("SQLite database is created.")
 
-        self.connection = sqlite3.connect(sqlite_settings["database"], check_same_thread=False)
+        self.connection = sqlite3.connect(database_path, check_same_thread=False)
         logging.info("SQLite connection is initialized.")
 
     def execute_query(self, query, params=None):
@@ -107,8 +122,8 @@ class DatabaseHandler:
 
 
 if __name__ == "__main__":
-    settings = load_settings()
-    db = DatabaseHandler(settings)
+    settings_manager = SettingsManager()
+    db = DatabaseHandler(settings_manager)
     result = db.fetch_query("SELECT * FROM documents;")
     print(result)
 

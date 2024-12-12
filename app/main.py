@@ -11,9 +11,9 @@ from flet import (
 
 from app.db_conn import DatabaseHandler
 from app.logging_config import setup_logging
-from app.settings import load_settings
 from app.unity_conn import SocketServer
-from app.views import MyView
+from app.viewmodels.settings_manager import SettingsManager
+from app.views.views import MyView
 
 server = SocketServer()
 server_thread = threading.Thread(target=server.start, daemon=True)
@@ -24,10 +24,11 @@ def main(page: Page):
     page.scroll = ScrollMode.AUTO
     page.padding = 10
 
-    db = DatabaseHandler(load_settings())
+    settings_manager = SettingsManager()
+    db = DatabaseHandler(settings_manager)
     page.data = {
         "settings_file": "local.settings.json",
-        "settings": load_settings,
+        "settings": settings_manager,
         "db": db,
         "server": server,
     }

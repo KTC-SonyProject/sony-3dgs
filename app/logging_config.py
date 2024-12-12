@@ -48,6 +48,7 @@ LOGGING_CONFIG = {
     },
     "loggers": {
         "app": {"handlers": ["console", "app_file", "full_file"], "level": "DEBUG", "propagate": False},
+        "__main__": {"handlers": ["console", "app_file", "full_file"], "level": "DEBUG", "propagate": False},
         "": {"handlers": ["console", "app_file", "full_file"], "level": "INFO", "propagate": True},
     },
 }

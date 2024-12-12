@@ -1,11 +1,13 @@
+import logging
 import os
 from typing import Any
 
 from langchain.globals import set_verbose
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 
-from app.settings import load_settings
+from app.viewmodels.settings_manager import load_settings
 
+logger = logging.getLogger(__name__)
 
 def llm_settings(verbose: bool = False) -> Any:
     set_verbose(verbose)
@@ -14,7 +16,6 @@ def llm_settings(verbose: bool = False) -> Any:
         settings = settings.get("azure_llm_settings")
         # 変数が空文字の場合はエラーを出す
         for key in settings:
-            print(settings[key])
             if settings[key] == "":
                 raise ValueError(f"Invalid setting: {key}")
         os.environ["AZURE_OPENAI_ENDPOINT"] = settings.get("endpoint")
@@ -57,10 +58,10 @@ def langsmith_settigns():
         os.environ["LANGCHAIN_ENDPOINT"] = settings["langsmith_settings"].get("endpoint")
         os.environ["LANGCHAIN_PROJECT"] = settings["langsmith_settings"].get("project_name", "spadge-project")
         os.environ["LANGCHAIN_API_KEY"] = settings["langsmith_settings"].get("api_key")
-        print("Langsmith is setting.")
+        logger.info("Langsmith is setting.")
     else:
         os.environ["LANGCHAIN_TRACING_V2"] = "false"
-        print("Langsmith is not setting.")
+        logger.info("Langsmith is not setting.")
 
 if __name__ == "__main__":
     llm = llm_settings(verbose=True)

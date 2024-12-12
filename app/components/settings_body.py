@@ -27,7 +27,6 @@ from flet import (
 
 from app.ai.settings import langsmith_settigns
 from app.db_conn import DatabaseHandler
-from app.settings import load_settings
 
 
 class BaseSettingsColumn(Column):
@@ -43,7 +42,7 @@ class BaseSettingsColumn(Column):
                 content=Text(title, size=30),
             ),
             Divider(),
-            self.create_settings_controls()
+            self.create_settings_controls(),
         ]
 
     def create_settings_controls(self):
@@ -62,6 +61,7 @@ class BaseSettingsColumn(Column):
 
     def update_settings(self, key):
         """設定を更新する"""
+
         def handler(e):
             keys = key.split(".")
             target = self.settings
@@ -70,6 +70,7 @@ class BaseSettingsColumn(Column):
                     raise ValueError(f"Key {k} not found in settings")
                 target = target[k]
             target[keys[-1]] = e.control.value
+
         return handler
 
 
@@ -79,20 +80,21 @@ class GeneralSettingsColumn(BaseSettingsColumn):
 
     def create_settings_controls(self):
         return Column(
-                    spacing=20,
-                    controls=[
-                        TextField(
-                            label="App Title",
-                            value=self.get_setting_value("app_name"),
-                            on_change=self.update_settings("app_name"),
-                        ),
-                        TextField(
-                            label="App Description",
-                            value=self.get_setting_value("app_description"),
-                            on_change=self.update_settings("app_description"),
-                        ),
-                    ]
-                )
+            spacing=20,
+            controls=[
+                TextField(
+                    label="App Title",
+                    value=self.get_setting_value("app_name"),
+                    on_change=self.update_settings("app_name"),
+                ),
+                TextField(
+                    label="App Description",
+                    value=self.get_setting_value("app_description"),
+                    on_change=self.update_settings("app_description"),
+                ),
+            ],
+        )
+
 
 class DBSettingsColumn(BaseSettingsColumn):
     def __init__(self, page: Page, settings: dict):
@@ -106,51 +108,52 @@ class DBSettingsColumn(BaseSettingsColumn):
 
     def create_settings_controls(self):
         return Column(
-                    spacing=20,
+            spacing=20,
+            controls=[
+                Switch(
+                    label="Use PostgreSQL",
+                    value=self.get_setting_value("use_postgres"),
+                    on_change=self.on_change_use_postgres,
+                ),
+                Column(
+                    spacing=10,
+                    visible=self.get_setting_value("use_postgres"),
                     controls=[
-                        Switch(
-                            label="Use PostgreSQL",
-                            value=self.get_setting_value("use_postgres"),
-                            on_change=self.on_change_use_postgres,
+                        Text("PostgreSQL Settings", size=20),
+                        Divider(),
+                        TextField(
+                            label="Host",
+                            value=self.get_setting_value("postgres_settings.host"),
+                            on_change=self.update_settings("postgres_settings.host"),
                         ),
-                        Column(
-                            spacing=10,
-                            visible=self.get_setting_value("use_postgres"),
-                            controls=[
-                                Text("PostgreSQL Settings", size=20),
-                                Divider(),
-                                TextField(
-                                    label="Host",
-                                    value=self.get_setting_value("postgres_settings.host"),
-                                    on_change=self.update_settings("postgres_settings.host"),
-                                ),
-                                TextField(
-                                    label="Port",
-                                    value=self.get_setting_value("postgres_settings.port"),
-                                    on_change=self.update_settings("postgres_settings.port"),
-                                    input_filter=NumbersOnlyInputFilter(),
-                                ),
-                                TextField(
-                                    label="Database",
-                                    value=self.get_setting_value("postgres_settings.database"),
-                                    on_change=self.update_settings("postgres_settings.database"),
-                                ),
-                                TextField(
-                                    label="User",
-                                    value=self.get_setting_value("postgres_settings.user"),
-                                    on_change=self.update_settings("postgres_settings.user"),
-                                ),
-                                TextField(
-                                    label="Password",
-                                    value=self.get_setting_value("postgres_settings.password"),
-                                    password=True,
-                                    can_reveal_password=True,
-                                    on_change=self.update_settings("postgres_settings.password"),
-                                ),
-                            ],
+                        TextField(
+                            label="Port",
+                            value=self.get_setting_value("postgres_settings.port"),
+                            on_change=self.update_settings("postgres_settings.port"),
+                            input_filter=NumbersOnlyInputFilter(),
+                        ),
+                        TextField(
+                            label="Database",
+                            value=self.get_setting_value("postgres_settings.database"),
+                            on_change=self.update_settings("postgres_settings.database"),
+                        ),
+                        TextField(
+                            label="User",
+                            value=self.get_setting_value("postgres_settings.user"),
+                            on_change=self.update_settings("postgres_settings.user"),
+                        ),
+                        TextField(
+                            label="Password",
+                            value=self.get_setting_value("postgres_settings.password"),
+                            password=True,
+                            can_reveal_password=True,
+                            on_change=self.update_settings("postgres_settings.password"),
                         ),
                     ],
-                )
+                ),
+            ],
+        )
+
 
 class LLMSettingsColumn(BaseSettingsColumn):
     def __init__(self, page: Page, settings: dict):
@@ -219,7 +222,6 @@ class LLMSettingsColumn(BaseSettingsColumn):
                 ],
             )
 
-
     def on_change_llm_provider(self, e):
         """LLMプロバイダーを切り替える"""
         self.update_settings("llm_provider")(e)
@@ -234,59 +236,59 @@ class LLMSettingsColumn(BaseSettingsColumn):
 
     def create_settings_controls(self):
         return Column(
-                    expand=True,
-                    scroll=ScrollMode.HIDDEN,
-                    spacing=50,
+            expand=True,
+            scroll=ScrollMode.HIDDEN,
+            spacing=50,
+            controls=[
+                Dropdown(
+                    label="LLM Provider",
+                    value=self.get_setting_value("llm_provider"),
+                    options=[
+                        dropdown.Option("azure"),
+                        dropdown.Option("gemini"),
+                        dropdown.Option("ollama"),
+                    ],
+                    on_change=self.on_change_llm_provider,
+                ),
+                self.get_llm_provider_control(self.get_setting_value("llm_provider")),
+                Column(
+                    spacing=10,
                     controls=[
-                        Dropdown(
-                            label="LLM Provider",
-                            value=self.get_setting_value("llm_provider"),
-                            options=[
-                                dropdown.Option("azure"),
-                                dropdown.Option("gemini"),
-                                dropdown.Option("ollama"),
-                            ],
-                            on_change=self.on_change_llm_provider,
+                        Text(
+                            "Options",
+                            size=20,
                         ),
-                        self.get_llm_provider_control(self.get_setting_value("llm_provider")),
+                        Divider(),
+                        Text(
+                            "Chat履歴を効率的に管理するためにLangSmithを導入できます。",
+                            size=15,
+                        ),
+                        Switch(
+                            label="Use LangSmith",
+                            value=self.get_setting_value("use_langsmith"),
+                            on_change=self.on_change_use_langsmith,
+                        ),
                         Column(
-                            spacing=10,
+                            visible=self.get_setting_value("use_langsmith"),
                             controls=[
-                                Text(
-                                    "Options",
-                                    size=20,
+                                TextField(
+                                    label="project name",
+                                    value=self.get_setting_value("langsmith_settings.project_name"),
+                                    on_change=self.update_settings("langsmith_settings.project_name"),
                                 ),
-                                Divider(),
-                                Text(
-                                    "Chat履歴を効率的に管理するためにLangSmithを導入できます。",
-                                    size=15,
-                                ),
-                                Switch(
-                                    label="Use LangSmith",
-                                    value=self.get_setting_value("use_langsmith"),
-                                    on_change=self.on_change_use_langsmith,
-                                ),
-                                Column(
-                                    visible=self.get_setting_value("use_langsmith"),
-                                    controls=[
-                                        TextField(
-                                            label="project name",
-                                            value=self.get_setting_value("langsmith_settings.project_name"),
-                                            on_change=self.update_settings("langsmith_settings.project_name"),
-                                        ),
-                                        TextField(
-                                            label="LangSmith API Key",
-                                            value=self.get_setting_value("langsmith_settings.api_key"),
-                                            password=True,
-                                            can_reveal_password=True,
-                                            on_change=self.update_settings("langsmith_settings.api_key"),
-                                        ),
-                                    ],
+                                TextField(
+                                    label="LangSmith API Key",
+                                    value=self.get_setting_value("langsmith_settings.api_key"),
+                                    password=True,
+                                    can_reveal_password=True,
+                                    on_change=self.update_settings("langsmith_settings.api_key"),
                                 ),
                             ],
                         ),
                     ],
-                )
+                ),
+            ],
+        )
 
 
 class TabBody(Tab):
@@ -295,7 +297,7 @@ class TabBody(Tab):
         self.page = page
         self.settings = settings
         self.text = title
-        self.expand=True
+        self.expand = True
 
         if title == "General":
             self.content = GeneralSettingsColumn(self.page, self.settings)
@@ -312,7 +314,7 @@ class SettingsBody(Column):
         super().__init__()
         self.page = page
         self.spacing = 10
-        self.expand=True
+        self.expand = True
         # self.alignment = MainAxisAlignment.START
         self.horizontal_alignment = CrossAxisAlignment.START
 
@@ -329,7 +331,7 @@ class SettingsBody(Column):
                     controls=[
                         Text("Settings", size=30),
                         ElevatedButton("Save Settings", on_click=self.save_settings),
-                    ]
+                    ],
                 ),
             ),
             Tabs(
@@ -339,19 +341,18 @@ class SettingsBody(Column):
                 tab_alignment=TabAlignment.CENTER,
                 tabs=[
                     TabBody(self.page, "General", self.settings["general_settings"]),
-                    TabBody(self.page, "Database", self.settings["db_settings"]),
+                    TabBody(self.page, "Database", self.settings["database_settings"]),
                     TabBody(self.page, "LLM", self.settings["llm_settings"]),
-                ]
+                ],
             ),
         ]
-
 
     def save_settings(self, e):
         """設定をファイルに保存する"""
         try:
             with open(self.settings_file, "w") as f:
                 json.dump(self.settings, f, indent=4)
-            self.page.data["db"] = DatabaseHandler(load_settings())
+            self.page.data["db"] = DatabaseHandler(self.page.data["settings"])
             langsmith_settigns()
             self.show_banner(e, "success")
         except Exception:
@@ -378,4 +379,3 @@ class SettingsBody(Column):
         e.control.page.update()
         time.sleep(3)
         self.close_banner(e)
-
