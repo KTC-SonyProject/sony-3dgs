@@ -35,7 +35,7 @@ class AzureLlmSettings:
 
 @dataclass
 class LangsmithSettings:
-    endpoint: str = ""
+    endpoint: str = "https://api.smith.langchain.com"
     project_name: str = ""
     api_key: str = ""
 

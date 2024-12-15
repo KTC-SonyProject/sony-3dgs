@@ -9,12 +9,12 @@ from flet import (
 
 from app.components.body import ContentBody
 from app.components.chat import ChatBody
-from app.components.documents_body import DocumentsBody, EditDocumentBody
 from app.components.header import AppHeader
 from app.components.home_body import HomeBody
 from app.components.top_body import TopBody
 from app.components.unity_body import UnityBody
 from app.components.voice_body import VoiceBody
+from app.views.documents_view import DocumentsView, EditDocumentsView
 from app.views.settings_view import SettingsView
 
 logger = logging.getLogger(__name__)
@@ -34,34 +34,34 @@ class MyLayout(View):
         self.troute = TemplateRoute(self.route)
 
         self.route_config = {
-            '/': {
-                'title': 'Top',
-                'layout': TopBody(self.page),
+            "/": {
+                "title": "Top",
+                "layout": TopBody(self.page),
             },
-            '/home': {
-                'title': 'Home',
-                'layout': HomeBody(self.page),
+            "/home": {
+                "title": "Home",
+                "layout": HomeBody(self.page),
             },
-            '/voice': {
-                'title': 'Voice',
-                'layout': VoiceBody(self.page),
+            "/voice": {
+                "title": "Voice",
+                "layout": VoiceBody(self.page),
             },
-            '/documents': {
-                'title': 'Documents',
-                'layout': DocumentsBody(self.page),
+            "/documents": {
+                "title": "Documents",
+                "layout": DocumentsView(self.page, self.page.data["docs_manager"]),
             },
-            '/settings': {
-                'title': 'Settings',
+            "/settings": {
+                "title": "Settings",
                 # 'layout': SettingsBody(self.page),
-                'layout': SettingsView(self.page, self.page.data['settings']),
+                "layout": SettingsView(self.page, self.page.data["settings"]),
             },
-            '/chat': {
-                'title': 'Chat',
-                'layout': ChatBody(self.page),
+            "/chat": {
+                "title": "Chat",
+                "layout": ChatBody(self.page),
             },
-            '/unity': {
-                'title': 'Unity',
-                'layout': UnityBody(self.page),
+            "/unity": {
+                "title": "Unity",
+                "layout": UnityBody(self.page),
             },
         }
 
@@ -73,13 +73,13 @@ class MyLayout(View):
         if self.troute.match("/documents/:document_id"):
             self.route_info = {
                 'title': 'Document',
-                'layout': DocumentsBody(self.page, self.troute.document_id),
+                'layout': DocumentsView(self.page, self.page.data['docs_manager'], self.troute.document_id),
             }
             logger.debug(f"Document ID: {self.troute.document_id}")
         elif self.troute.match("/documents/:document_id/edit"):
             self.route_info = {
                 "title": "Edit Document",
-                "layout": EditDocumentBody(self.page, self.troute.document_id),
+                "layout": EditDocumentsView(self.page, self.page.data["docs_manager"], self.troute.document_id),
             }
             logger.debug(f"Edit Document ID: {self.troute.document_id}")
         else:

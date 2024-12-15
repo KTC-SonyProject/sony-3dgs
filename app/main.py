@@ -9,9 +9,10 @@ from flet import (
     app,
 )
 
-from app.db_conn import DatabaseHandler
 from app.logging_config import setup_logging
+from app.models.database_models import DatabaseHandler
 from app.unity_conn import SocketServer
+from app.viewmodels.documents_manager import DocumentsManager
 from app.viewmodels.settings_manager import SettingsManager
 from app.views.views import MyView
 
@@ -25,11 +26,13 @@ def main(page: Page):
     page.padding = 10
 
     settings_manager = SettingsManager()
-    db = DatabaseHandler(settings_manager)
+    db_handler = DatabaseHandler(settings_manager)
+    docs_manager = DocumentsManager(db_handler)
     page.data = {
         "settings_file": "local.settings.json",
         "settings": settings_manager,
-        "db": db,
+        "db": db_handler,
+        "docs_manager": docs_manager,
         "server": server,
     }
 
@@ -58,7 +61,7 @@ def main(page: Page):
 
     def on_close():
         server.stop()
-        db.close()
+        db_handler.close()
         server_thread.join()
         print("Application closed")
 
@@ -85,7 +88,6 @@ except OSError:
     server.stop()
     server_thread.join()
     # もう一度tryする
-    app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")
 except Exception as e:
     logger.error(f"Error starting app: {e}")
     raise e
