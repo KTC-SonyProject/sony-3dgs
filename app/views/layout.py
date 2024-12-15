@@ -7,15 +7,15 @@ from flet import (
     View,
 )
 
-from app.components.body import ContentBody
 from app.components.chat import ChatBody
-from app.components.header import AppHeader
-from app.components.home_body import HomeBody
-from app.components.top_body import TopBody
 from app.components.unity_body import UnityBody
-from app.components.voice_body import VoiceBody
 from app.views.documents_view import DocumentsView, EditDocumentsView
+from app.views.header_view import HeaderView
+from app.views.home_view import HomeView
 from app.views.settings_view import SettingsView
+from app.views.template_view import TemplateView
+from app.views.top_view import TopView
+from app.views.voice_view import VoiceView
 
 logger = logging.getLogger(__name__)
 
@@ -36,15 +36,15 @@ class MyLayout(View):
         self.route_config = {
             "/": {
                 "title": "Top",
-                "layout": TopBody(self.page),
+                "layout": TopView(self.page),
             },
             "/home": {
                 "title": "Home",
-                "layout": HomeBody(self.page),
+                "layout": HomeView(self.page),
             },
             "/voice": {
                 "title": "Voice",
-                "layout": VoiceBody(self.page),
+                "layout": VoiceView(self.page),
             },
             "/documents": {
                 "title": "Documents",
@@ -66,8 +66,8 @@ class MyLayout(View):
         }
 
         self.default_route_config = {
-            'title': '404 Page Not Found',
-            'layout': ContentBody(self.page, '404 Page Not Found'),
+            "title": "404 Page Not Found",
+            "layout": TemplateView(self.page, "404 Page Not Found"),
         }
 
         if self.troute.match("/documents/:document_id"):
@@ -87,6 +87,6 @@ class MyLayout(View):
             logger.debug(f"Route: {self.route}")
 
         self.controls = [
-            AppHeader(self.page, self.route_info['title'].upper()),
-            self.route_info['layout'], # ルートごとに適切なレイアウトを取得
+            HeaderView(self.page, self.route_info["title"].upper()),
+            self.route_info["layout"],  # ルートごとに適切なレイアウトを取得
         ]

@@ -7,10 +7,10 @@ from flet import (
 )
 
 # カレントディレクトリにあるREADME.mdを取得
-md = open('README.md').read()
+md = open("README.md").read()
 
 
-class TopBody(Column):
+class TopView(Column):
     def __init__(self, page: Page):
         super().__init__()
         self.spacing = 10
@@ -23,11 +23,13 @@ class TopBody(Column):
             )
         ]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
+
     def main(page: Page) -> None:
-        page.title = 'test app'
+        page.title = "test app"
         page.scroll = "auto"
-        chat_page = TopBody()
+        chat_page = TopView()
         page.add(chat_page)
 
     app(main)

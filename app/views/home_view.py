@@ -48,7 +48,6 @@ class HomeCard(Card):
         )
 
 
-
 class HomeList(Column):
     def __init__(self, page: Page):
         super().__init__()
@@ -88,7 +87,7 @@ class HomeList(Column):
         return items
 
 
-class HomeBody(Container):
+class HomeView(Container):
     def __init__(self, page: Page):
         super().__init__()
         self.page = page
@@ -107,7 +106,7 @@ if __name__ == "__main__":
     def main(page: Page) -> None:
         page.title = "test app"
         page.scroll = "auto"
-        chat_page = HomeBody(page)
+        chat_page = HomeView(page)
         page.add(chat_page)
 
     app(main)
