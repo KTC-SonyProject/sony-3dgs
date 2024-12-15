@@ -83,12 +83,15 @@ class ChatbotGraph:
     def stream_graph_updates(self, user_input: str, config: RunnableConfig | None = None) -> Iterator[Any]:
         if config is None:
             self.set_memory_config("1")
+        else:
+            self.memory_config = config
 
         try:
             events = self.graph.stream({"messages": [("user", user_input)]}, self.memory_config, stream_mode="values")
             for event in events:
                 yield event["messages"][-1]
         except Exception as e:
+            print(e)
             raise ValueError("ストリーム更新に失敗しました。") from e
 
 
@@ -114,14 +117,14 @@ if __name__ == "__main__":
         sender = "ユーザー" if "HumanMessage" in str(type(message)) else "アシスタント"
         print(f"{i}. **{sender}:** {message.content}")
 
-    # while True:
-    #     try:
-    #         user_input = input("User: ")
-    #         if user_input.lower() in ["quit", "exit", "q"]:
-    #             print("Goodbye!")
-    #             break
+    while True:
+        try:
+            user_input = input("User: ")
+            if user_input.lower() in ["quit", "exit", "q"]:
+                print("Goodbye!")
+                break
 
-    #         for response in chatbot_graph.stream_graph_updates(user_input):
-    #             print("Assistant:", response.pretty_print())
-    #     except Exception as e:
-    #         raise ValueError("ストリーム更新に失敗しました。") from e
+            for response in chatbot_graph.stream_graph_updates(user_input, config):
+                print("Assistant:", response.pretty_print())
+        except Exception as e:
+            raise ValueError("ストリーム更新に失敗しました。") from e
