@@ -65,6 +65,7 @@ try:
 
         # 入力に応じた処理
         if option == "1":
+            menu_displayed = False
             print("送信するコマンド: ", end="", flush=True)
             try:
                 command = input_queue.get(timeout=30)  # コマンド入力を待機
@@ -76,8 +77,9 @@ try:
                 print("接続が失われました。コマンド送信をキャンセルしました。")
                 continue
             server.send_command(command)
-            print("選択してください: ", end="", flush=True)
+            continue
         elif option == "2":
+            menu_displayed = False
             print("送信するファイルのパス: ", end="", flush=True)
             try:
                 file_path = input_queue.get(timeout=30)  # ファイルパス入力を待機
@@ -89,7 +91,7 @@ try:
                 print("接続が失われました。ファイル送信をキャンセルしました。")
                 continue
             server.send_file(file_path)
-            print("選択してください: ", end="", flush=True)
+            continue
         elif option.lower() == "q":
             server.stop()
             break
