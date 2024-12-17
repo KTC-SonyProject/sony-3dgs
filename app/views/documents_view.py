@@ -33,7 +33,7 @@ from flet import (
 )
 
 from app.ai.vector_db import delete_document_from_vectorstore, indexing_document
-from app.viewmodels.documents_manager import DocumentsManager
+from app.controller.documents_manager import DocumentsManager
 
 logger = logging.getLogger(__name__)
 

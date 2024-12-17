@@ -4,12 +4,12 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from app.controller.utils import get_dataclass_mapping, safe_dataclass_init
 from app.models import settings_models as models
 from app.models.settings_models import (
     DEFAULT_SETTINGS,
     AppSettings,
 )
-from app.viewmodels.utils import get_dataclass_mapping, safe_dataclass_init
 
 # ロギング設定
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ from pathlib import Path
 
 from psycopg_pool import ConnectionPool
 
-from app.viewmodels.settings_manager import SettingsManager
+from app.controller.settings_manager import SettingsManager
 
 # ロギングの設定
 logging.basicConfig(level=logging.INFO)

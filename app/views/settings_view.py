@@ -21,7 +21,7 @@ from flet import (
     dropdown,
 )
 
-from app.viewmodels.settings_manager import SettingsManager
+from app.controller.settings_manager import SettingsManager
 
 
 def create_text_field(label, value, on_change, password=False, can_reveal_password=False):

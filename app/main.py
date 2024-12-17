@@ -9,11 +9,11 @@ from flet import (
     app,
 )
 
+from app.controller.documents_manager import DocumentsManager
+from app.controller.settings_manager import SettingsManager
 from app.logging_config import setup_logging
 from app.models.database_models import DatabaseHandler
 from app.unity_conn import SocketServer
-from app.viewmodels.documents_manager import DocumentsManager
-from app.viewmodels.settings_manager import SettingsManager
 from app.views.views import MyView
 
 server = SocketServer()

@@ -15,8 +15,8 @@ from typing_extensions import TypedDict
 
 from app.ai.settings import langsmith_settigns, llm_settings
 from app.ai.tools import DisplayOperationTool, tools
+from app.controller.settings_manager import load_settings
 from app.unity_conn import SocketServer
-from app.viewmodels.settings_manager import load_settings
 
 
 class State(TypedDict):
