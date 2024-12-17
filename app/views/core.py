@@ -24,6 +24,7 @@ class BaseTabBodyView(Column):
         super().__init__(
             spacing=10,
             expand=True,
+            alignment=alignment.center,
         )
         self.page = page
         self.title = title

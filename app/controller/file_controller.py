@@ -1,6 +1,6 @@
 import logging
 import os
-from flet import FilePickerUploadFile
+from flet import FilePickerUploadFile, FilePicker, Page
 
 from app.models.file_models import FileModel
 from app.unity_conn import SocketServer
@@ -8,32 +8,34 @@ from app.unity_conn import SocketServer
 logger = logging.getLogger(__name__)
 
 class FileController:
-    def __init__(self, socket_server: SocketServer):
-        self.model = FileModel()
+    def __init__(self, page: Page, socket_server: SocketServer):
+        self.model = FileModel(page)
         self.server = socket_server
 
-    def handle_file_selection(self, files):
+    def handle_file_selection(self, files: list[FilePickerUploadFile]) -> list[FilePickerUploadFile] | None:
             """ファイル選択時にモデルを更新"""
             if files:
                 selected_files = self.model.set_selected_files(files)
                 logger.debug(f"選択されたファイル: {selected_files}")
                 return selected_files
             else:
-                return []
+                return None
 
-    def prepare_upload_files(self, file_picker):
+    def prepare_upload_files(self) -> list[FilePickerUploadFile]:
         """ファイルの一時アップロード用URLを生成"""
         upload_list = []
         try:
-            for f in file_picker.result.files:
-                upload_url = self.model.get_file_path(f.name)
+            for f in self.model.selected_files:
+                logger.debug(f"ファイル準備中: {f.name}")
+                upload_url = self.model.get_file_path(f)
+                logger.debug(f"アップロードURL: {upload_url}")
                 upload_list.append(FilePickerUploadFile(f.name, upload_url))
             return upload_list
         except Exception as e:
             logger.error(f"ファイル準備中にエラー: {e}")
             raise e
 
-    def send_file_to_unity(self, file_name: str) -> tuple[bool, str]:
+    def send_file_to_unity(self, file_name) -> tuple[bool, str]:
         """Unityアプリにファイルを送信"""
         file_path = self.model.get_file_path(file_name)
         try:

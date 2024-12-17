@@ -8,7 +8,6 @@ from flet import (
 )
 
 from app.components.chat import ChatBody
-from app.components.unity_body import UnityBody
 from app.views.documents_view import DocumentsView, EditDocumentsView
 from app.views.header_view import HeaderView
 from app.views.home_view import HomeView
@@ -16,6 +15,7 @@ from app.views.settings_view import SettingsView
 from app.views.template_view import TemplateView
 from app.views.top_view import TopView
 from app.views.voice_view import VoiceView
+from app.views.unity_view import UnityView
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +61,7 @@ class MyLayout(View):
             },
             "/unity": {
                 "title": "Unity",
-                "layout": UnityBody(self.page),
+                "layout": UnityView(self.page, self.page.data["file_controller"]),
             },
         }
 

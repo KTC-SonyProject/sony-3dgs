@@ -14,6 +14,7 @@ from app.controller.settings_manager import SettingsManager
 from app.logging_config import setup_logging
 from app.models.database_models import DatabaseHandler
 from app.unity_conn import SocketServer
+from app.controller.file_controller import FileController
 from app.views.views import MyView
 
 server = SocketServer()
@@ -28,12 +29,15 @@ def main(page: Page):
     settings_manager = SettingsManager()
     db_handler = DatabaseHandler(settings_manager)
     docs_manager = DocumentsManager(db_handler)
+    file_controller = FileController(server)
+
     page.data = {
         "settings_file": "local.settings.json",
         "settings": settings_manager,
         "db": db_handler,
         "docs_manager": docs_manager,
         "server": server,
+        "file_controller": file_controller,
     }
 
     page.fonts = {
