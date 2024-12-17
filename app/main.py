@@ -77,7 +77,7 @@ if not os.environ.get("FLET_SECRET_KEY"):
     os.environ["FLET_SECRET_KEY"] = "secret"
 
 try:
-    app(target=main, port=8000, assets_dir="assets", upload_dir="assets/uploads")
+    app(target=main, port=8000, assets_dir="assets", upload_dir="storage/temp/uploads")
 except KeyboardInterrupt:
     logger.info("App stopped by user")
     server.stop()
